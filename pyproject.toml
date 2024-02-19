@@ -1,0 +1,27 @@
+[build-system]
+requires = ["flit_core >=3.4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "django_mlops"
+version = "0.1.0"
+description = "A Django app for MLOps: eliminate unnecessary duplication of tools and project complexity"
+authors = [{name = "Your Name", email = "eburmicz@gmail.com"}]
+readme = "README.md"
+license = {text = "MIT"}  # Adjust if you have a LICENSE file or another license
+keywords = ["django", "mlops"]
+classifiers = [
+    "Framework :: Django",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "Django>=5",
+    # "Celery",
+    # Add other dependencies as needed
+]
+requires-python = ">=3.9"
+
+[project.urls]
+Homepage = "https://github.com/eddyojb88/django_mlops"

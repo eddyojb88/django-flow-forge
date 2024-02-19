@@ -1,0 +1,51 @@
+
+    <div id="cy" style="width: 100%; height: 800px">
+
+        <title>Graph Visualization</title>
+
+        <script src="https://unpkg.com/cytoscape@3.19.0/dist/cytoscape.min.js"></script>
+        <script src="https://unpkg.com/dagre/dist/dagre.min.js"></script>
+        <script src="https://unpkg.com/cytoscape-dagre/cytoscape-dagre.js"></script>
+
+        <!-- Placeholder for HTMX response handling -->
+        <div id="cy-container" style="width: 800px; height: 600px;"></div>
+        
+        
+        <script>
+        // Initialize Cytoscape with default layout
+        var cy = cytoscape({
+            container: document.getElementById('cy-container'),
+            elements: {{ process_data|safe}},
+            style: [ // Updated styling for visibility against black background
+                        {
+                            selector: 'node',
+                            style: {
+                                'background-color': '#0074D9',
+                                'label': 'data(label)', // Use the 'label' field from the node's data for the label
+                                'color': '#fff',  // Ensure text is white for visibility
+                                'text-valign': 'center',
+                                'text-halign': 'center',
+                                'font-size': '9px' // Adjust font size here, e.g., 10px for smaller text
+                            }
+                        },
+                        
+                        {
+                            selector: 'edge',
+                            style: {
+                                'width': 2,
+                                'line-color': '#fff',  // Edge line color set to white
+                                'target-arrow-color': '#fff',  // Arrow color set to white
+                                'target-arrow-shape': 'triangle',  // Arrow shape
+                                'curve-style': 'bezier'
+                            }
+                        }
+                    ],
+            layout: {
+                name: 'dagre',
+                nodeSep: 120, // Increase node separation; adjust as needed
+                edgeSep: 50, // Increase edge separation; adjust as needed
+                rankSep: 30 // Increase rank separation; adjust as needed
+            }
+        });
+        
+        </script>

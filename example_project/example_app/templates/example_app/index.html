@@ -1,0 +1,28 @@
+<!-- templates/your_app_name/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+</head>
+
+<!-- Make sure to include CSRF token for HTMX to send to the database -->
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-ext="debug, event-header"></body>
+    <div style="margin-bottom: 25px">
+        <h1>Trigger Page</h1>
+        <!-- Use HTMX to asynchronously send a request to trigger_data_science_proj1 -->
+        <button hx-post="{% url 'trigger-data-science-proj1' %}" hx-target="#status" hx-swap="outerHTML">
+            Initiate Data Science Project 1 Tasks
+        </button>
+    </div>
+
+    <div>
+        <button hx-post="{% url 'trigger-web-scrape-proj' %}" hx-target="#status" hx-swap="outerHTML">
+            Initiate Web Scraping Project Tasks
+        </button>
+    </div>
+
+    <div id="status"></div>
+</body>
+</html>

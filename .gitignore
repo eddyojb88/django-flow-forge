@@ -1,7 +1,13 @@
+# For package dev:
+Dockerfile
+docker-compose-local.yml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+db.sqlite3
 
 # C extensions
 *.so

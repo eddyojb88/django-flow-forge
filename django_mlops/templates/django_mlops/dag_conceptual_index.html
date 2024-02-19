@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    {% load django_htmx %}
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="htmx-config" content='{"historyCacheSize": 15}'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" crossorigin="anonymous">
+    <title>DAG Visualization</title>
+    
+    <script src="{% static 'django_mlops/htmx.min.js' %}" defer></script>
+
+</head>
+<body style="background-color:black" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-ext="debug, event-header">
+
+    <!-- HTMX Dropdown menu -->
+    <div class="container"
+     hx-get="{% url 'conceptual-dag-viz' %}"
+     hx-trigger="change"
+     hx-target="#cy-container"
+     hx-swap="outerHTML"
+     hx-include="this"
+     >
+        <div class="mb-3">
+            <label class="mb-3">Select Track:</label>
+
+            <select name='process_option' class="form-control" id="graphSelector"  
+                    <!-- hx-trigger="change"  -->
+                    <!-- hx-target="#cy-container" -->
+                    <!-- hx-get="{% url 'conceptual-dag-viz' %}" -->
+                    <!-- hx-swap="outerHTML" -->
+                    >
+                {% for process in all_processes %}
+
+                    <option value="{{ process.id }}" {% if forloop.first %}selected{% endif %}>
+                    
+                        {{ process.process_name }}
+
+                    </option>
+
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Toggle button for showing nested tasks -->
+        <div class="custom-control custom-switch">
+            <input name='show_nested' type="checkbox" class="custom-control-input" id="nestedTasksToggle"
+                   <!-- hx-get="{% url 'conceptual-dag-viz' %}" -->
+                   <!-- hx-trigger="change" -->
+                   <!-- hx-target="#cy-container" -->
+                   <!-- hx-swap="outerHTML" -->
+                   <!-- hx-vals='javascript:{"showNested": document.getElementById("nestedTasksToggle").checked}'> -->
+            <label class="custom-control-label" for="nestedTasksToggle">Show nested tasks</label>
+        </div>
+
+    </div>
+
+
+    <!-- Bootstrap grid container -->
+    <div class="container">
+        <div class="row">
+            <div id="dag-cyto-col" class="col">
+                <!-- Your content here -->
+                {% include 'django_mlops/dag_cyto.html' %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS and its dependencies -->
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" crossorigin="anonymous"></script> -->
+
+</body>
+</html>

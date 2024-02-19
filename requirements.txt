@@ -1,0 +1,7 @@
+Django==5
+django-htmx
+django_compressor
+django-libsass
+django-browser-reload
+plotly
+celery
