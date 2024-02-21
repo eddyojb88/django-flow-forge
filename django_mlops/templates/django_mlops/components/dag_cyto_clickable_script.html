@@ -1,8 +1,12 @@
-<div id="cy-container" style="width: 600px; height: 600px;"></div>
-<script>
+        <!-- Placeholder for HTMX response handling -->
+        <div id="cy-graph" style="width: 100%; height: 600px;" class="border rounded"></div>
+        <input type="hidden" class="include-input" name="executed_process_option" value="{{ executed_process_id }}" />
+        
+        <script>
+        // Initialize Cytoscape with default layout
         var cy = cytoscape({
-            container: document.getElementById('cy-container'),
-            elements: {{ process_data|safe}},
+            container: document.getElementById('cy-graph'),
+            elements: {{ graph_json|safe}},
             style: [ // Updated styling for visibility against black background
                         {
                             selector: 'node',
@@ -13,9 +17,9 @@
                                 'text-valign': 'center',
                                 'text-halign': 'center',
                                 'font-size': '9px' // Adjust font size here, e.g., 10px for smaller text
-
                             }
                         },
+                        
                         {
                             selector: 'edge',
                             style: {
@@ -27,11 +31,27 @@
                             }
                         }
                     ],
-                    layout: {
+            layout: {
                 name: 'dagre',
                 nodeSep: 120, // Increase node separation; adjust as needed
                 edgeSep: 50, // Increase edge separation; adjust as needed
                 rankSep: 30 // Increase rank separation; adjust as needed
             }
         });
-</script>
+
+        // Add event listener for node clicks
+        cy.on('tap', 'node', function(evt){
+
+            var nodeId = (typeof evt.target.id == 'function') ? evt.target.id() : ""
+            var executedProcessId = "{{ executed_process_id }}"; // Render Django variable into JS
+
+            // Trigger HTMX request upon clicking the node
+            console.log('Sending click event to body with node id: ' + nodeId + ' and executedProcessID: ' + executedProcessId)
+            htmx.trigger(htmx.find('#data-div1'), "tap", {'clicked_node_id':nodeId, 'executed_process_option': executedProcessId});
+
+
+        });
+
+
+        
+        </script>

@@ -168,7 +168,7 @@ def run_process_pipeline(process_name):
 
     try:
         process = Process.objects.get(process_name=process_name)
-        process_run = ExecutedProcess.objects.create(process=process,) 
+        process_run = ExecutedProcess.objects.create(process=process, process_id_snapshot=process.id, process_name_snapshot=process.process_name) 
         all_task_objs, task_order = resolve_dependencies_get_task_order(process_name)
         
     except Exception as e:
@@ -178,6 +178,7 @@ def run_process_pipeline(process_name):
     process_pipeline = fetch_process_pipeline(process_name)
     process_snapshot = make_process_snapshot(process_pipeline, task_order)
     process_snapshot['graph'] = get_cytoscape_nodes_and_edges(all_task_objs, show_nested=True)
+    process_snapshot['process_name'] = process_name
     process_run.process_snapshot = process_snapshot
     process_run.save()
 
@@ -194,6 +195,19 @@ def run_process_pipeline(process_name):
 
     logging.info(f"All tasks for process {process_name} completed successfully.")
 
+def make_task_snapshot(process_task_obj,):
+
+    task_snapshot = {
+        'task_id': process_task_obj.id,
+        'task_name': process_task_obj.task_name,
+        # Assuming 'task' has the necessary information; adjust as necessary
+        'depends_on': [dependency.task_name for dependency in process_task_obj.depends_on.all()],
+        'depends_bidirectionally_with': [dependency.task_name for dependency in process_task_obj.depends_bidirectionally_with.all()],
+        'nested': process_task_obj.nested
+    }
+
+    return task_snapshot
+
 def execute_task(task_dict, task_name, process, process_run,):
 
     process_task_obj = ProcessTask.objects.get(task_name=task_name, process=process)
@@ -205,11 +219,13 @@ def execute_task(task_dict, task_name, process, process_run,):
 
     logging.info(f"Executing task: {task_name}...")
 
+    task_snapshot = make_task_snapshot(process_task_obj,)
+
     task_run = ExecutedTask.objects.create(
         process_run=process_run,
         task=process_task_obj,
         task_snapshot_id=process_task_obj.id,
-        # task_snapshot=task_snapshot,
+        task_snapshot=task_snapshot,
         start_time=timezone.now(),
     )
 

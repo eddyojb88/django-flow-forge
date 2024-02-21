@@ -3,6 +3,7 @@ from django.db import models
 class Process(models.Model):
     process_name = models.CharField(null=False, blank=False, max_length=255, unique=True)  # Assuming each process name is unique
     process_display_name = models.CharField(null=True, blank=True, max_length=255,)
+    in_current_code_base = models.BooleanField(default=True, null=False, blank=True)
 
     def save(self, *args, **kwargs):
         # Check if process_display_name is not provided or is empty
@@ -30,7 +31,9 @@ class ProcessTask(models.Model):
         return f"{self.process.process_name} - {self.task_name}"
 
 class ExecutedProcess(models.Model):
-    process = models.ForeignKey(Process, on_delete=models.CASCADE, related_name='process_runs')
+    process = models.ForeignKey(Process, null=True, on_delete=models.SET_NULL, related_name='process_runs')
+    process_id_snapshot = models.BigIntegerField(null=True, blank=True,)
+    process_name_snapshot = models.CharField(null=True, blank=True, max_length=255)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     executed_tasks = models.ManyToManyField(ProcessTask, related_name='executed_tasks', blank=True)
@@ -48,6 +51,7 @@ class ExecutedTask(models.Model):
     process_run = models.ForeignKey(ExecutedProcess, on_delete=models.CASCADE, related_name='task_runs')
     task = models.ForeignKey(ProcessTask, null=True, blank=True, on_delete=models.SET_NULL, related_name='runs')
     task_snapshot_id = models.BigIntegerField(null=True, blank=True,) # A snapshot of the task id at runtime so that graph viz can ref even if code and tasks change over time
+    task_name_snapshot = models.CharField(null=True, blank=True, max_length=255)
     task_snapshot = models.JSONField(default=dict)  # Captures the task state at the time of this run
     output = models.JSONField(null=True, default=dict)  # Captures the output of the task for this run
     start_time = models.DateTimeField(auto_now_add=True)
@@ -56,4 +60,8 @@ class ExecutedTask(models.Model):
 
 
     def __str__(self):
-        return f"Run of {self.task.task_name} for {self.process_run}. Completed: {self.task_complete}"
+        if not self.task:
+            task_name = self.task_snapshot['task_name']
+        else:
+            task_name = self.task.task_name
+        return f"Run of '{task_name}' for '{self.process_run}'. Completed: {self.task_complete}"

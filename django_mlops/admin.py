@@ -25,7 +25,7 @@ class ProcessTaskAdmin(admin.ModelAdmin):
 
 @admin.register(models.ExecutedProcess)
 class ExecutedProcessAdmin(admin.ModelAdmin):
-    list_display = ('process', 'start_time', 'end_time', 'executed_by', 'process_complete')
+    list_display = ('process', 'process_name_snapshot', 'start_time', 'end_time', 'executed_by', 'process_complete')
     list_filter = ('process', 'process_complete')
     search_fields = ['process__process_name', 'executed_by']
     filter_horizontal = ('executed_tasks',)
@@ -39,7 +39,7 @@ class ExecutedProcessAdmin(admin.ModelAdmin):
 
 @admin.register(models.ExecutedTask)
 class ExecutedTaskAdmin(admin.ModelAdmin):
-    list_display = ('task', 'process_run', 'start_time', 'end_time', 'task_complete')
+    list_display = ('task', 'task_name_snapshot', 'process_run', 'start_time', 'end_time', 'task_complete')
     list_filter = ('process_run', 'task_complete')
     search_fields = ['task__task_name', 'process_run__process__process_name']
     readonly_fields = ('output', 'task_snapshot_id')
