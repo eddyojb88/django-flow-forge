@@ -16,10 +16,36 @@
     <script src="{% static 'django_mlops/htmx.min.js' %}" defer></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" crossorigin="anonymous">
 
+    <style>
+
+    /* In your stylesheet */
+    .is-complete {
+        color: rgb(112, 255, 112) !important;
+    }
+
+    .is-not-complete {
+        color: rgb(255, 238, 0) !important;
+    }
+
+    #cy-graph {
+        border: 1px solid #858585; /* Soft grey border color */
+    }
+
+    .node-info-container {
+        border: 1px solid #858585 !important; /* Soft grey border color */
+    }
+
+    .page-content { 
+        padding: 2rem;
+    }
+
+    </style>
+
 
 </head>
-<body style="background-color:black" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-ext="debug, event-header">
 
+<body style="background-color:black" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-ext="debug, event-header">
+    <div class="page-content">
     <!-- HTMX Dropdown menu -->
     <div class="container"
      hx-get="{% url 'tasks_run_viz' %}"
@@ -29,25 +55,27 @@
      hx-include="this"
      >
 
-     <h2 class="display-4 mb-5 text-light">Pipeline Results</h1>
+     <h2 class="display-5 mb-5 text-light">Pipeline Results</h1>
 
-        <table class="table table-dark table-striped table-bordered table-hover">
+        <table class="table table-dark table-bordered table-hover table-sm">
             <thead>
                 <tr>
                     <th scope="col">Process Name</th>
                     <th scope="col">Start Time</th>
-                    <th scope="col">Completed</th>
+                    <th class='text-center' scope="col">Completed</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
                 {% for process in page_obj %}
-                <tr>
-                    <td>{{ process.process_name_snapshot }}</td>
+                <tr class='align-middle' style="font-size: 0.8rem;">
+                    <td >{{ process.process_name_snapshot }}</td>
                     <td>{{ process.start_time }}</td>
-                    <td>{{ process.process_complete }}</td>
-                    <td>
-                        <button name='executed_process_option' value='{{ process.id }}' class="btn btn-primary" hx-get="{% url 'tasks_run_viz' %}" hx-target="#cytoscape-outer-container" hx-swap="innerHTML">
+                    <td class="{{ process.process_complete|yesno:'is-complete,is-not-complete' }} text-center">
+                        {{ process.get_status_display }}
+                    </td>
+                    <td class="text-center">
+                        <button name='executed_process_option' value='{{ process.id }}' class="btn btn-primary btn-sm" hx-get="{% url 'tasks_run_viz' %}" hx-target="#cytoscape-outer-container" hx-swap="innerHTML">
                             <i class="fas fa-play"></i> Draw Graph
                         </button>
                     </td>
@@ -76,31 +104,30 @@
         </div>
 
 
-        <div class="container">
+        <div class="container mt-5 mb-5">
             <div class="row">
-                <div id="dag-cyto-col" class="col">
-                    {% include 'django_mlops/components/dag_cyto_clickable.html' %}
+                <div class="col">
+                    <h3 class="display-6 mb-5 text-light">Process Graph</h1>
                 </div>
             </div>
-        </div>
 
-        <div class="container">
             <div class="row">
+                <div id="dag-cyto-col" class="col-lg-6">
+                    {% include 'django_mlops/components/dag_cyto_clickable.html' %}
+                </div>
 
-                    <div id="data-div1" class="text-light col"
-                        hx-get="{% url 'update-node-info' %}"
-                        hx-trigger="tap from:#data-div1" 
-                        hx-target="this"
-                        hx-swap="innerHTML"
-                        hx-vals='js:{clicked_node_id: event.detail["clicked_node_id"]}'>
-                        
-                    </div>
-
+                <div id="data-div1" class="text-light col-lg-6"
+                    hx-get="{% url 'update-node-info' %}"
+                    hx-trigger="tap from:#data-div1" 
+                    hx-target="this"
+                    hx-swap="innerHTML"
+                    hx-vals='js:{clicked_node_id: event.detail["clicked_node_id"]}'>
+                </div>
             </div>
         </div>
     </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
+</div>
 </body>
 </html>

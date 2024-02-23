@@ -21,7 +21,7 @@ def trigger_data_science_proj1(request):
 
 def trigger_data_science_proj1_with_nested(request):
 
-    run_process_pipeline('data_science_project_with_nested')
+    run_process_pipeline('data_science_project_with_nesting')
     # Assuming you have some mechanism to detect when tasks are done,
     # you can then do something here or just return a simple HttpResponse.
     return HttpResponse("Tasks executed", status=200)

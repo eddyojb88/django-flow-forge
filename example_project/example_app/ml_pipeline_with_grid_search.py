@@ -1,11 +1,27 @@
 from django_mlops.tasks_db import register_task_pipeline
+
 from datetime import datetime
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+import xgboost as xgb
 
 
 ''' Task definitions for 'data_science_project1' '''
 
+# Fetch data function
 def fetch_data1():
-    print("Fetching data 1")
+    # Generating synthetic data for classification
+    X, y = make_classification(n_samples=1000, n_features=10, n_classes=2, random_state=42)
+    return X, y
+
+# Fetch data function
+def fetch_data2():
+    # Additional data fetching process
+    fetch_data_nested_1()
+    fetch_data_nested_2()
+    # In a real-world scenario, this could be fetching data from another source
+    # Here, we'll just generate some dummy data
+    return 'additional_data'
 
 def fetch_data_nested_1():
     return 'nested_data1'
@@ -13,21 +29,39 @@ def fetch_data_nested_1():
 def fetch_data_nested_2():
     return 'nested_data2'
 
-def fetch_data2():
-    print("Fetching data 2")
-    data1 = fetch_service_data1()
-    data2 = fetch_service_data2()
-    return
+# Cleaning data function
+def clean_data():
+    # No specific cleaning required for this example
+    return True
 
-def fetch_service_data1():
-    service_data = call_api1()
-    return service_data
+# Analyzing data function
+def analyze_data():
+    # Simple analysis - just summarizing the data
+    analysis = 'Some Summary Analysis'
+    return {'forecast_date': str(datetime.now()), 'analysis': analysis}
 
-def fetch_service_data2():
-    return 'service_data1'
-
-def call_api1():
-    return 'api_call_data'
+# Training model function
+def train_model():
+    # Generating synthetic data for demonstration
+    X, y = fetch_data1()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Training XGBoost model
+    dtrain = xgb.DMatrix(X_train, label=y_train)
+    dtest = xgb.DMatrix(X_test, label=y_test)
+    
+    params = {
+        'max_depth': 3,
+        'eta': 0.1,
+        'objective': 'binary:logistic',
+        'eval_metric': 'logloss',
+        'seed': 42
+    }
+    
+    num_rounds = 100
+    model = xgb.train(params, dtrain, num_rounds, evals=[(dtest, 'eval')], verbose_eval=False)
+    
+    return model
 
 def clean_data():
     return True
@@ -69,14 +103,14 @@ def register_pipelines():
     ds_pipeline = {
                     'fetch_data': {'function': fetch_data1, 'depends_on': [], 
                                 'nested_tasks': {
-                                                    'fetch_data_nested_1': {
+                                                    'fetch_metadata': {
                                                         'function': fetch_data_nested_1,
                                                         'depends_on': [],
-                                                        'depends_bidirectionally_with': ['fetch_data']
+                                                        'depends_bidirectionally_with': ['fetch_data'],
                                                     },
-                                                    'fetch_data_nested_2': {
+                                                    'fetch_tiktok_data': {
                                                         'function': fetch_data_nested_2,
-                                                        'depends_on': ['fetch_data_nested_1'],
+                                                        'depends_on': ['fetch_metadata'],
                                                         'depends_bidirectionally_with': ['fetch_data']
                                                     }
                                                 }

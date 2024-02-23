@@ -164,7 +164,7 @@ def make_process_snapshot(tasks_lookup, task_order):
     
     return process_snapshot
 
-def run_process_pipeline(process_name):
+def run_process_pipeline(process_name, **kwargs):
 
     try:
         process = Process.objects.get(process_name=process_name)
@@ -173,6 +173,7 @@ def run_process_pipeline(process_name):
         
     except Exception as e:
         logging.error(f"Failed to initiate process run for {process_name}: {e}")
+        raise Exception('You may have spelt the process wrong or are referring to a pipeline that no longer exists.')
         return
 
     process_pipeline = fetch_process_pipeline(process_name)
@@ -183,17 +184,24 @@ def run_process_pipeline(process_name):
     process_run.save()
 
     logging.info(f"Starting task execution for process '{process_name}'.")
+    try:
+        for task_name in task_order:
+            # If its in the process_pipeline then its not a nested task:
+            if task_name in process_pipeline:
+                task_dict = process_pipeline[task_name]
 
-    for task_name in task_order:
-        task_dict = process_pipeline[task_name]
+            execute_task(task_dict, task_name, process, process_run, **kwargs)
 
-        execute_task(task_dict, task_name, process, process_run,)
+        process_run.end_time = timezone.now()
+        process_run.process_complete = True
+        process_run.status = 'complete'
+        process_run.save()
 
-    process_run.end_time = timezone.now()
-    process_run.process_complete = True
-    process_run.save()
-
-    logging.info(f"All tasks for process {process_name} completed successfully.")
+        logging.info(f"All tasks for process {process_name} completed successfully.")
+        
+    except Exception as e:
+        logging.info(f'Exception: {e}')
+        process_run.status = 'failed'
 
 def make_task_snapshot(process_task_obj,):
 
@@ -208,7 +216,7 @@ def make_task_snapshot(process_task_obj,):
 
     return task_snapshot
 
-def execute_task(task_dict, task_name, process, process_run,):
+def execute_task(task_dict, task_name, process, process_run, **kwargs):
 
     process_task_obj = ProcessTask.objects.get(task_name=task_name, process=process)
     
@@ -229,7 +237,7 @@ def execute_task(task_dict, task_name, process, process_run,):
         start_time=timezone.now(),
     )
 
-    task_output = task_dict['function']()  # Execute the task
+    task_output = task_dict['function'](**kwargs)  # Execute the task
 
     task_run.output=task_output
     task_run.task_complete = True

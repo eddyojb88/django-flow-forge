@@ -83,7 +83,7 @@ def tasks_run_viz(request):
     if request.htmx:
 
         # Render a partial template with the new Cytoscape graph
-        html = render_to_string('django_mlops/components/dag_cyto_clickable.html', context=context)
+        html = render_to_string('django_mlops/components/dag_cyto_clickable_script.html', context=context)
         return HttpResponse(html)
 
     return render(request, 'django_mlops/dag_tasks_run.html', context=context)
@@ -113,7 +113,6 @@ def update_node_info(request):
             return render(request, 'django_mlops/components/clicked_node_info.html', context)
         
     return HttpResponse("Request must be made via HTMX.", status=400)
-
 
 def switch_value_to_bool(switch):
 
