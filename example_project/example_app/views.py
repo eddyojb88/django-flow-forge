@@ -24,5 +24,5 @@ def trigger_pipeline_simple_ml(request):
     return HttpResponse("'pipeline_simple_ml' executed", status=200)
 
 def trigger_pipeline_ml_grid_search(request):
-    run_process_pipeline('pipeline_ml_grid_search')
-    return HttpResponse("'pipeline_ml_grid_search' executed", status=200)
+    run_process_pipeline('pipeline_ml_with_grid_search')
+    return HttpResponse("'pipeline_ml_with_grid_search' executed", status=200)

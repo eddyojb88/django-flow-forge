@@ -18,6 +18,9 @@
         <title>DAG Visualization</title>
         
         <script src="{% static 'django_mlops/htmx.min.js' %}" defer></script>
+        <script src="https://unpkg.com/cytoscape@3.19.0/dist/cytoscape.min.js"></script>
+        <script src="https://unpkg.com/dagre/dist/dagre.min.js"></script>
+        <script src="https://unpkg.com/cytoscape-dagre/cytoscape-dagre.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" crossorigin="anonymous">
 
         <style>
@@ -43,6 +46,10 @@
             padding: 2rem;
         }
 
+        .title-hr {
+            color: lightgrey;
+        }
+
         </style>
 
 
@@ -58,17 +65,12 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <h2 class="display-5 mb-5 text-light">Pipeline Results</h1>
+                    <h2 class="display-5 text-light">Pipeline Results</h2>
+                        <hr class="title-hr mb-5">
                 </div>
             </div>
      
-            <div class="row"
-                hx-get="{% url 'tasks_run_viz' %}"
-                hx-trigger="change"
-                hx-target="#cytoscape-outer-container"
-                hx-swap="innerHTML"
-                hx-include="this"
-                >
+            <div class="row">
                 <div class="col">
                     <table class="table table-dark table-bordered table-hover table-sm">
                         <thead>
@@ -88,7 +90,8 @@
                                     {{ process.get_status_display }}
                                 </td>
                                 <td class="text-center">
-                                    <button name='executed_process_option' value='{{ process.id }}' class="btn btn-primary btn-sm" hx-get="{% url 'tasks_run_viz' %}" hx-target="#cytoscape-outer-container" hx-swap="innerHTML">
+                                    <button name='executed_process_option' value='{{ process.id }}' class="btn btn-primary btn-sm" 
+                                    hx-get="{% url 'tasks_run_viz' %}" hx-target="#cytoscape-and_ml-outer-row" hx-swap="innerHTML">
                                         <i class="fas fa-play"></i> Draw Graph
                                     </button>
                                 </td>
@@ -121,42 +124,14 @@
         </div>
 
         <div class="container mt-5 mb-5">
-            <div class="row">
-                <div class="col">
-                    <h3 class="display-6 mb-5 text-light">Process Graph</h1>
-                </div>
-            </div>
-
-            <div class="row">
-                <div id="dag-cyto-col" class="col-lg-6">
-                    {% include 'django_mlops/components/dag_cyto_clickable.html' %}
-                </div>
-
-                <div id="data-div1" class="text-light col-lg-6"
-                    hx-get="{% url 'update-node-info' %}"
-                    hx-trigger="tap from:#data-div1" 
-                    hx-target="this"
-                    hx-swap="innerHTML"
-                    hx-include="#current_executed_process_option"
-                    hx-vals='js:{clicked_node_id: event.detail["clicked_node_id"]}'>
-                </div>
-            </div>
-
-            <div class="row">
-                <div id="ml-results-div" class="col-lg-12 node-info-container border rounded"
-                    hx-get="{% url 'display_ml_results' %}"
-                    hx-trigger="change from:#current_executed_process_option"
-                    hx-swap="innerHTML"
-                    hx-include="#current_executed_process_option"
-                    >
-                    {% include 'django_mlops/ml_results_container.html' %}
-                </div>
-            </div>
+            {% include 'django_mlops/components/dag_graph_and_ml.html' %}
         </div>
-    </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </div>
 </body>
+<footer>
+
+</footer>
 {% endblock body %}
 </html>

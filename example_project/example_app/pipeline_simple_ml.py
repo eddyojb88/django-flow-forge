@@ -65,10 +65,10 @@ def train_model(**kwargs):
         'f1_score': f1
     }
 
-    executed_process = ExecutedProcess.objects.get(pk=kwargs['executued_process_id'])
+    executed_process = ExecutedProcess.objects.get(pk=kwargs['executed_process_id'])
     ml_result = MLResult.objects.create()
     ml_result.executed_process = executed_process
-    ml_result.experimant = 'synthetic data experiment'
+    ml_result.experiment = 'Experiment with synthetic data.'
     ml_result.algorithm = 'xgboost'
     ml_result.parameters = params
     ml_result.metrics = metrics

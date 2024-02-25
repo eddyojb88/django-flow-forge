@@ -39,6 +39,22 @@
             }
         });
 
+        function getNodeColor(status) {
+                    switch(status) {
+                        case 'complete': return '#2ECC40'; // Green
+                        case 'failed': return '#FF4136'; // Red
+                        case 'pending': return '#FFDC00'; // Yellow
+                        default: return '#0074D9'; // Default blue
+                    }
+                }
+
+        // Apply dynamic background color based on 'status'
+        cy.nodes().forEach(function(node) {
+            var status = node.data('status'); // Assuming 'status' is stored in each node's data
+            var color = getNodeColor(status);
+            node.style('background-color', color);
+        });
+
         // Add event listener for node clicks
         cy.on('tap', 'node', function(evt){
 

@@ -23,7 +23,7 @@ class ProcessTask(models.Model):
     task_name = models.CharField(max_length=255)
     depends_on = models.ManyToManyField('self', symmetrical=False, blank=True)
     task_output = models.JSONField(default=dict)  # Field to store the function output
-    depends_bidirectionally_with = models.ManyToManyField('self', symmetrical=True, blank=True, related_name='+')
+    depends_bidirectionally_with = models.ManyToManyField('self', symmetrical=True, blank=True,)
     nested = models.BooleanField(default=False, null=False, blank=True)
 
     class Meta:
@@ -32,13 +32,13 @@ class ProcessTask(models.Model):
     def __str__(self):
         return f"{self.process.process_name} - {self.task_name}"
 
+STATUS_CHOICES = (
+    ('complete', 'Complete'),
+    ('pending', 'Pending'),
+    ('failed', 'Failed'),
+    )
+    
 class ExecutedProcess(models.Model):
-
-    STATUS_CHOICES = (
-        ('complete', 'Complete'),
-        ('still_running', 'Still Running'),
-        ('failed', 'Failed'),
-        )
 
     process = models.ForeignKey(Process, null=True, on_delete=models.SET_NULL, related_name='process_runs')
     process_id_snapshot = models.BigIntegerField(null=True, blank=True,)
@@ -48,15 +48,16 @@ class ExecutedProcess(models.Model):
     executed_tasks = models.ManyToManyField(ProcessTask, related_name='executed_tasks', blank=True)
     executed_by = models.CharField(null=True, blank=True, max_length=255)
     process_complete = models.BooleanField(default=False)  # Indicates if the process run is complete
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='still_running')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     last_checkpoint_datetime = models.DateTimeField(blank=True, auto_now_add=True)
     process_snapshot = models.JSONField(default=dict)  # Captures the output of the task for this run
+    exceptions = models.JSONField(default=dict)
 
     def __str__(self):
-        return f"Run of {self.process.process_name} on {self.start_time}. Completed: {self.process_complete}"
-
-    def __str__(self):
-        return f"Run of {self.process.process_name} on {self.start_time}. Completed: {self.process_complete}"
+        if self.process:
+            return f"Run of {self.process.process_name} on {self.start_time}. Completed: {self.process_complete}"
+        else:
+            return f"Run of an unknown process on {self.start_time}. Completed: {self.process_complete}"
 
 class ExecutedTask(models.Model):
 
@@ -69,7 +70,8 @@ class ExecutedTask(models.Model):
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     task_complete = models.BooleanField(default=False)  # Indicates if the task run is complete
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    exceptions = models.JSONField(default=dict)
 
     def __str__(self):
         if not self.task:
@@ -91,4 +93,4 @@ class MLResult(models.Model):
     notes = models.TextField(blank=True)  # Any additional notes about the experiment
 
     def __str__(self):
-        return f"{self.experiment} -  {self.algorithm} - {self.created_at.strftime('%Y-%m-%d')}"
+        return f"{self.algorithm} - Experiment Desc.:{self.experiment} - {self.created_at.strftime('%Y-%m-%d')}"

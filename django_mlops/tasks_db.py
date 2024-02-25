@@ -5,6 +5,8 @@ import json
 from django.utils import timezone
 from .models import ProcessTask, Process, ExecutedProcess, ExecutedTask
 from .task_utils import get_cytoscape_nodes_and_edges, function_accepts_kwargs, filter_kwargs_for_function
+from django.conf import settings
+from django.utils import timezone
 
 from django.db import transaction
 from .models import Process, ProcessTask
@@ -182,27 +184,55 @@ def run_process_pipeline(process_name, **kwargs):
     process_snapshot['process_name'] = process_name
     process_run.process_snapshot = process_snapshot
     process_run.save()
-    kwargs['executued_process_id'] = process.id
+    kwargs['executed_process_id'] = process_run.id
 
     logging.info(f"Starting task execution for process '{process_name}'.")
-    try:
-        for task_name in task_order:
-            # If its in the process_pipeline then its not a nested task:
-            if task_name in process_pipeline:
-                task_dict = process_pipeline[task_name]
 
-            execute_task(task_dict, task_name, process, process_run, **kwargs)
+    for task_name in task_order:
+        # If its in the process_pipeline then its not a nested task:
+        if task_name in process_pipeline:
+            task_dict = process_pipeline[task_name]
 
-        process_run.end_time = timezone.now()
-        process_run.process_complete = True
-        process_run.status = 'complete'
+        executed = execute_task(task_dict, task_name, process, process_run, **kwargs)
+        process_run.last_checkpoint_datetime = timezone.now()
         process_run.save()
 
-        logging.info(f"All tasks for process {process_name} completed successfully.")
+        if not executed:
+            process_run.status = 'failed'
+            process_run = post_process_graph_to_add_status(process_run)
+            process_run.save()
+            return
 
-    except Exception as e:
-        logging.info(f'Exception: {e}')
-        process_run.status = 'failed'
+    process_run.end_time = timezone.now()
+    process_run.process_complete = True
+    process_run.status = 'complete'
+    process_run = post_process_graph_to_add_status(process_run)
+    process_run.save()
+
+    logging.info(f"All tasks for process {process_name} completed successfully.")
+
+    return
+
+def post_process_graph_to_add_status(process_run):
+    '''
+    An inefficient add on in order to color nodes based on task status
+    '''
+
+    # create index map:
+    index_map = {}
+    snapshot = process_run.process_snapshot
+    nodes = snapshot['graph']['nodes']
+    etasks = ExecutedTask.objects.filter(process_run=process_run,)
+    for count, i in enumerate(nodes):
+        index_map[i['data']['id']] = count
+        etask = etasks.filter(task_snapshot_id=i['data']['id'])
+        if len(etask) > 0:
+            i['data']['status'] = etask[0].status
+    snapshot['graph']['nodes'] = nodes
+    process_run.process_snapshot = snapshot
+    process_run.save()
+
+    return process_run
 
 def make_task_snapshot(process_task_obj,):
 
@@ -241,9 +271,40 @@ def execute_task(task_dict, task_name, process, process_run, **kwargs):
     # Execute the task but check whether it accepts **kwargs or not
     # If not, then filter the kwargs according to the accepted input arguments and pass on through
     func = task_dict['function']
-
+    
     accepts_kwargs = function_accepts_kwargs(func)
     
+    if getattr(settings, 'MLOPS_DEBUG', False):
+
+        task_output = run_task(accepts_kwargs, func, **kwargs)
+        process_run = post_process_graph_to_add_status(process_run) # inefficient but potentially useful for debugging
+
+    else:
+
+        try:
+            task_output = run_task(accepts_kwargs, func, **kwargs)
+
+        except Exception as e:
+            logging.info(f"Failed Task: {task_name}.")
+            task_run.status = 'failed'
+            task_run.end_time = timezone.now()
+            task_run.exceptions['main_run'] = str(e)
+            task_run.save()
+            return False
+
+    task_run.output=task_output
+    task_run.task_complete = True
+    task_run.end_time = timezone.now()
+    task_run.status = 'complete'
+    task_run.save()
+
+    logging.info(f"Task {task_name} executed successfully.")
+
+    return True
+
+
+def run_task(accepts_kwargs, func, **kwargs):
+
     if accepts_kwargs:
         task_output = func(**kwargs)
     
@@ -251,14 +312,4 @@ def execute_task(task_dict, task_name, process, process_run, **kwargs):
         filtered_kwargs = filter_kwargs_for_function(func, kwargs)
         task_output = func(**filtered_kwargs)
 
-    task_run.output=task_output
-    task_run.task_complete = True
-    task_run.end_time = timezone.now()
-    task_run.save()
-
-    logging.info(f"Task {task_name} executed successfully.")
-
-    return
-
-
-
+    return task_output

@@ -57,6 +57,7 @@ def tasks_run_viz(request):
 
     # Assuming ProcessTask is your model and process_name is a field in this model
     all_executed_processes = models.ExecutedProcess.objects.all().order_by('-start_time')
+    process_ml_results = models.MLResult.objects.filter(executed_process=executed_process)
 
     paginator = Paginator(all_executed_processes, 10)  # Show 10 processes per page
 
@@ -78,12 +79,13 @@ def tasks_run_viz(request):
         'all_executed_processes': all_executed_processes,
         'page_obj': page_obj,
         'current_executed_process_id': executed_process.id,
+        'ml_results': process_ml_results,
     }
 
     if request.htmx:
 
         # Render a partial template with the new Cytoscape graph
-        html = render_to_string('django_mlops/components/dag_cyto_clickable_script.html', context=context)
+        html = render_to_string('django_mlops/components/dag_graph_and_ml.html', context=context)
         return HttpResponse(html)
 
     return render(request, 'django_mlops/dag_tasks_run.html', context=context)
@@ -117,10 +119,14 @@ def update_node_info(request):
 
 def display_ml_results(request):
 
-    executed_process_id = request.GET.get('executed_process_option')
+    executed_process_id = request.GET.get('current_executed_process_id')
     ml_result_id = request.GET.get('ml_result_option')
+    
+    if ml_result_id and ml_result_id != '':
+        ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_process__id=executed_process_id)
+    else:
+        ml_result = None
 
-    ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_process=executed_process_id)
     context = {}
     context['ml_result'] = ml_result
         
