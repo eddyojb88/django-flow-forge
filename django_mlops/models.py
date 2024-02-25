@@ -49,6 +49,7 @@ class ExecutedProcess(models.Model):
     executed_by = models.CharField(null=True, blank=True, max_length=255)
     process_complete = models.BooleanField(default=False)  # Indicates if the process run is complete
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='still_running')
+    last_checkpoint_datetime = models.DateTimeField(blank=True, auto_now_add=True)
     process_snapshot = models.JSONField(default=dict)  # Captures the output of the task for this run
 
     def __str__(self):

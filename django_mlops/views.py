@@ -77,7 +77,7 @@ def tasks_run_viz(request):
         'graph_json': graph_json_serialized,
         'all_executed_processes': all_executed_processes,
         'page_obj': page_obj,
-        'executed_process_id': executed_process.id,
+        'current_executed_process_id': executed_process.id,
     }
 
     if request.htmx:
@@ -93,26 +93,38 @@ def update_node_info(request):
     if request.htmx:
 
         node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
-        executed_process_id = request.GET.get('executed_process_option', None)
+        executed_process_id = request.GET.get('current_executed_process_option', None)
 
         if node_id:
 
             executed_process = models.ExecutedProcess.objects.get(id=executed_process_id)
             executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, process_run=executed_process)
-
             executed_task_summary = {}
-
             executed_task_summary['output'] = executed_task.output
             executed_task_summary['start_time'] = executed_task.start_time
             executed_task_summary['end_time'] = executed_task.end_time
             executed_task_summary['task_complete'] = executed_task.task_complete
-
-            # Perform your logic here, e.g., fetching data related to the node
             context = {'executed_task_summary': executed_task_summary}
-            # Assuming you have a template named 'partials/node_info.html' to render the node information
+
+            ''' Check if any machine learning experiments associated with node'''
+            ml_results = models.MLResult.objects.filter(executed_process=executed_process)
+            context['ml_result_count'] = len(ml_results)
+            context['ml_results'] = ml_results
+            
             return render(request, 'django_mlops/components/clicked_node_info.html', context)
         
     return HttpResponse("Request must be made via HTMX.", status=400)
+
+def display_ml_results(request):
+
+    executed_process_id = request.GET.get('executed_process_option')
+    ml_result_id = request.GET.get('ml_result_option')
+
+    ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_process=executed_process_id)
+    context = {}
+    context['ml_result'] = ml_result
+        
+    return render(request, 'django_mlops/components/ml_result.html', context)
 
 def switch_value_to_bool(switch):
 

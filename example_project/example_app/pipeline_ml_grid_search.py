@@ -6,8 +6,6 @@ from sklearn.model_selection import train_test_split
 import xgboost as xgb
 
 
-''' Task definitions for 'data_science_project1' '''
-
 # Fetch data function
 def fetch_data1():
     # Generating synthetic data for classification
@@ -76,20 +74,7 @@ def train_model():
 def register_pipelines():
 
     register_task_pipeline(
-        process_name='data_science_project_simple',
-        clear_existing_process_in_db=True,
-        pipeline = {
-                    'fetch_data1': {'function': fetch_data1, 'depends_on': []},
-                    'fetch_data2': {'function': fetch_data2, 'depends_on': []},
-                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1', 'fetch_data2']},
-                    'analyze_data': {'function': analyze_data, 'depends_on': ['clean_data']},
-                    'train_model': {'function': train_model, 'depends_on': ['analyze_data', 'clean_data']},
-                    }
-
-    )
-
-    register_task_pipeline(
-        process_name='data_science_project_simple_v2', 
+        process_name='pipeline_ml_with_grid_search', 
         clear_existing_process_in_db=True,
         pipeline = {
                     'fetch_data2': {'function': fetch_data2, 'depends_on': []},
@@ -98,29 +83,6 @@ def register_pipelines():
                     'train_model': {'function': train_model, 'depends_on': ['analyze_data']},
                    }
     )
-
-
-    ds_pipeline = {
-                    'fetch_data': {'function': fetch_data1, 'depends_on': [], 
-                                'nested_tasks': {
-                                                    'fetch_metadata': {
-                                                        'function': fetch_data_nested_1,
-                                                        'depends_on': [],
-                                                        'depends_bidirectionally_with': ['fetch_data'],
-                                                    },
-                                                    'fetch_tiktok_data': {
-                                                        'function': fetch_data_nested_2,
-                                                        'depends_on': ['fetch_metadata'],
-                                                        'depends_bidirectionally_with': ['fetch_data']
-                                                    }
-                                                }
-                                    },
-                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data']},
-                    'analyze_data': {'function': analyze_data, 'depends_on': ['clean_data']},
-                    'train_model': {'function': train_model,'depends_on': ['analyze_data']}
-            }
-
-    register_task_pipeline(process_name='data_science_project_with_nesting', pipeline=ds_pipeline, clear_existing_process_in_db=True)
 
     return
 

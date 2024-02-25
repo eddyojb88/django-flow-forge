@@ -11,17 +11,33 @@
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-ext="debug, event-header"></body>
     <div style="margin-bottom: 25px">
         <h1>Trigger Page</h1>
-        <!-- Use HTMX to asynchronously send a request to trigger_data_science_proj1 -->
-        <button hx-post="{% url 'trigger-data-science-proj1' %}" hx-target="#status" hx-swap="outerHTML">
-            Initiate Data Science Project 1 Tasks
+    </div>
+
+    <div style="margin-bottom: 25px">
+        <button hx-post="{% url 'trigger_pipeline_simple' %}" hx-target="#status" hx-swap="outerHTML">
+            Initiate 'pipeline_simple' Process
+        </button>
+    </div>
+    
+    <div style="margin-bottom: 25px">
+        <button hx-post="{% url 'trigger_pipeline_with_nested_tasks' %}" hx-target="#status" hx-swap="outerHTML">
+            Initiate 'trigger_pipeline_with_nested_tasks' Process
         </button>
     </div>
 
-    <div>
-        <button hx-post="{% url 'trigger-data-science-nested-proj' %}" hx-target="#status" hx-swap="outerHTML">
-            Initiate Data Science Project with Nested Tasks
+    <div style="margin-bottom: 25px">
+        <button hx-post="{% url 'trigger_pipeline_simple_ml' %}" hx-target="#status" hx-swap="outerHTML">
+            Initiate 'trigger_pipeline_simple_ml' Process
         </button>
     </div>
+
+    <div style="margin-bottom: 25px">
+        <button hx-post="{% url 'trigger_pipeline_ml_grid_search' %}" hx-target="#status" hx-swap="outerHTML">
+            Initiate 'trigger_pipeline_ml_grid_search' Process
+        </button>
+    </div>
+
+
 
     <div id="status"></div>
 </body>

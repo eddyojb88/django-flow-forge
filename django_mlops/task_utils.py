@@ -1,3 +1,26 @@
+import inspect
+
+def function_accepts_kwargs(func):
+    """
+    Check if the function accepts **kwargs.
+    """
+    sig = inspect.signature(func)
+    return any(param.kind == param.VAR_KEYWORD for param in sig.parameters.values())
+
+def filter_kwargs_for_function(func, kwargs):
+    """
+    Filter kwargs to only include keys that match the function's parameters.
+    If the function accepts **kwargs, return the original kwargs.
+    """
+    if function_accepts_kwargs(func):
+        return kwargs  # Return original kwargs if **kwargs is accepted
+
+    sig = inspect.signature(func)
+    func_params = sig.parameters
+    filtered_kwargs = {key: value for key, value in kwargs.items() if key in func_params}
+
+    return filtered_kwargs
+
 def get_cytoscape_nodes_and_edges(tasks, show_nested=False):
     
     nodes = []

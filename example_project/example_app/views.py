@@ -5,23 +5,24 @@ from django.http import HttpResponse
 
 from django_mlops.tasks_db import run_process_pipeline
 
-from . import tasks_and_pipeline # This is important in order to load up your tasks and allow the model to register each task
-
-# from . import tasks_with_decorators # This is important in order to load up your tasks and allow the model to register each task
+ # This is important in order to load up your tasks and allow django_ml_ops to register each task
+from . import pipeline_simple, pipeline_with_nested_tasks, pipeline_simple_ml, pipeline_ml_grid_search 
 
 def index(request):
     return render(request, 'example_app/index.html')
 
-def trigger_data_science_proj1(request):
+def trigger_pipeline_simple(request):
+    run_process_pipeline('pipeline_simple')
+    return HttpResponse("'Pipeline Simple' Executed", status=200)
 
-    run_process_pipeline('data_science_project_simple')
-    # Assuming you have some mechanism to detect when tasks are done,
-    # you can then do something here or just return a simple HttpResponse.
-    return HttpResponse("Tasks executed", status=200)
+def trigger_pipeline_with_nested_tasks(request):
+    run_process_pipeline('pipeline_with_nested_tasks')
+    return HttpResponse("'pipeline_with_nested_tasks' executed", status=200)
 
-def trigger_data_science_proj1_with_nested(request):
+def trigger_pipeline_simple_ml(request):
+    run_process_pipeline('pipeline_simple_ml')
+    return HttpResponse("'pipeline_simple_ml' executed", status=200)
 
-    run_process_pipeline('data_science_project_with_nesting')
-    # Assuming you have some mechanism to detect when tasks are done,
-    # you can then do something here or just return a simple HttpResponse.
-    return HttpResponse("Tasks executed", status=200)
+def trigger_pipeline_ml_grid_search(request):
+    run_process_pipeline('pipeline_ml_grid_search')
+    return HttpResponse("'pipeline_ml_grid_search' executed", status=200)

@@ -4,7 +4,7 @@ from django.db import transaction, IntegrityError
 import json
 from django.utils import timezone
 from .models import ProcessTask, Process, ExecutedProcess, ExecutedTask
-from .task_utils import get_cytoscape_nodes_and_edges
+from .task_utils import get_cytoscape_nodes_and_edges, function_accepts_kwargs, filter_kwargs_for_function
 
 from django.db import transaction
 from .models import Process, ProcessTask
@@ -182,6 +182,7 @@ def run_process_pipeline(process_name, **kwargs):
     process_snapshot['process_name'] = process_name
     process_run.process_snapshot = process_snapshot
     process_run.save()
+    kwargs['executued_process_id'] = process.id
 
     logging.info(f"Starting task execution for process '{process_name}'.")
     try:
@@ -198,7 +199,7 @@ def run_process_pipeline(process_name, **kwargs):
         process_run.save()
 
         logging.info(f"All tasks for process {process_name} completed successfully.")
-        
+
     except Exception as e:
         logging.info(f'Exception: {e}')
         process_run.status = 'failed'
@@ -236,8 +237,19 @@ def execute_task(task_dict, task_name, process, process_run, **kwargs):
         task_snapshot=task_snapshot,
         start_time=timezone.now(),
     )
+    
+    # Execute the task but check whether it accepts **kwargs or not
+    # If not, then filter the kwargs according to the accepted input arguments and pass on through
+    func = task_dict['function']
 
-    task_output = task_dict['function'](**kwargs)  # Execute the task
+    accepts_kwargs = function_accepts_kwargs(func)
+    
+    if accepts_kwargs:
+        task_output = func(**kwargs)
+    
+    else:
+        filtered_kwargs = filter_kwargs_for_function(func, kwargs)
+        task_output = func(**filtered_kwargs)
 
     task_run.output=task_output
     task_run.task_complete = True

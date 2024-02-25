@@ -1,6 +1,6 @@
         <!-- Placeholder for HTMX response handling -->
         <div id="cy-graph" style="min-width: 600px; height: 600px;" class="rounded"></div>
-        <input type="hidden" class="include-input" name="executed_process_option" value="{{ executed_process_id }}" />
+        <input type="hidden" class="include-input" id='current_executed_process_option' name="current_executed_process_option" value={{ current_executed_process_id }}>
         
         <script>
         // Initialize Cytoscape with default layout
@@ -43,7 +43,7 @@
         cy.on('tap', 'node', function(evt){
 
             var nodeId = (typeof evt.target.id == 'function') ? evt.target.id() : ""
-            var executedProcessId = "{{ executed_process_id }}"; // Render Django variable into JS
+            var executedProcessId = "{{ current_executed_process_id }}"; // Render Django variable into JS
 
             // Trigger HTMX request upon clicking the node
             console.log('Sending click event to body with node id: ' + nodeId + ' and executedProcessID: ' + executedProcessId)
