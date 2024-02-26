@@ -86,6 +86,22 @@
             y: {
                 beginAtZero: true
             }
+        },
+        interaction: {
+            mode: 'x',
+            intersect: false
+        },
+        plugins: {
+            tooltip: {
+                // Adjusted tooltip interaction settings
+                mode: 'index',
+                intersect: false,
+                position: 'nearest' // Ensures tooltip appears near the vertical position but aligned with x-axis data point
+            }
+        },
+        hover: {
+            mode: 'index',
+            intersect: false
         }
     }
 });
