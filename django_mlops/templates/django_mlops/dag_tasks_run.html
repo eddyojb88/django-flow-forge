@@ -26,12 +26,19 @@
         <style>
 
         /* In your stylesheet */
-        .is-complete {
-            color: rgb(112, 255, 112) !important;
+        .complete {
+            background-color: #a7fba7 !important;
+            color: black !important; 
         }
 
-        .is-not-complete {
-            color: rgb(255, 238, 0) !important;
+        .pending {
+            background-color: #fdf46d !important;
+            color: black !important;
+        }
+
+        .failed {
+            background-color: #fa7b7b !important;
+            color: black !important;
         }
 
         #cy-graph {
@@ -50,6 +57,15 @@
             color: lightgrey;
         }
 
+        .body-bg-color {
+            /* background-color: #213344; */
+            /* background-color: rgb(31, 31, 36); */
+            background-color: rgb(2, 2, 2);
+        }
+        .narrow-col {
+            max-width: 30px;
+        }
+
         </style>
 
 
@@ -57,7 +73,7 @@
 {% endblock head %}
 
 {% block body %}
-<body style="background-color:black" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-ext="debug, event-header">
+<body class='body-bg-color' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-ext="debug, event-header">
     <div class="page-content">
         
         
@@ -65,19 +81,24 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <h2 class="display-5 text-light">Pipeline Results</h2>
+                    <h2 class="display-5 text-light">Pipelines Dashboard</h2>
                         <hr class="title-hr mb-5">
                 </div>
             </div>
+            
+            {% include 'django_mlops/components/task_summary_charts.html' %}
      
             <div class="row">
+                <h3 class="display-6 mt-5 text-light">Status Table</h3>
+                <hr class="title-hr mb-5">
+
                 <div class="col">
-                    <table class="table table-dark table-bordered table-hover table-sm">
+                    <table class="table table-dark table-bordered rounded">
                         <thead>
                             <tr>
                                 <th scope="col">Process Name</th>
                                 <th scope="col">Start Time</th>
-                                <th class='text-center' scope="col">Completed</th>
+                                <th class='text-center narrow-col' scope="col">Status</th>
                                 <th scope="col"></th>
                             </tr>
                         </thead>
@@ -86,11 +107,12 @@
                             <tr class='align-middle' style="font-size: 0.8rem;">
                                 <td >{{ process.process_name_snapshot }}</td>
                                 <td>{{ process.start_time }}</td>
-                                <td class="{{ process.process_complete|yesno:'is-complete,is-not-complete' }} text-center">
-                                    {{ process.get_status_display }}
+                                <td class="text-center">
+                                    <span class="badge {{ process.status }} text-dark">{{ process.get_status_display }}</span>
+                                    
                                 </td>
                                 <td class="text-center">
-                                    <button name='executed_process_option' value='{{ process.id }}' class="btn btn-primary btn-sm" 
+                                    <button name='executed_process_option' value='{{ process.id }}' class="btn btn-primary badge btn-sm" 
                                     hx-get="{% url 'tasks_run_viz' %}" hx-target="#cytoscape-and_ml-outer-row" hx-swap="innerHTML">
                                         <i class="fas fa-play"></i> Draw Graph
                                     </button>

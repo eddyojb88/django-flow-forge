@@ -5,6 +5,11 @@ from django.template.loader import render_to_string
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.core.paginator import Paginator
+from django.db.models import Count, F, DateField
+from django.db.models.functions import TruncDay
+from django.shortcuts import render
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 
 from django_mlops.task_utils import get_cytoscape_nodes_and_edges
 
@@ -73,6 +78,8 @@ def tasks_run_viz(request):
     graph_json = executed_process.process_snapshot['graph']
     graph_json_serialized = json.dumps(graph_json, cls=DjangoJSONEncoder)
 
+    chart_context = summary_chart_view()
+
     context = {
         # 'plotly_fig': plot_div,  # The Plotly figure in HTML div format
         'graph_json': graph_json_serialized,
@@ -82,6 +89,8 @@ def tasks_run_viz(request):
         'ml_results': process_ml_results,
     }
 
+    context = {**context, **chart_context}
+
     if request.htmx:
 
         # Render a partial template with the new Cytoscape graph
@@ -89,6 +98,32 @@ def tasks_run_viz(request):
         return HttpResponse(html)
 
     return render(request, 'django_mlops/dag_tasks_run.html', context=context)
+
+def summary_chart_view():
+    # Aggregate tasks by day
+    processes_by_day = models.ExecutedProcess.objects.annotate(day=TruncDay('start_time')).values('day').annotate(count=Count('id')).order_by('day')
+    
+    # Prepare data for the line chart
+    line_chart_data = {
+        'labels': [entry['day'].strftime('%Y-%m-%d') for entry in processes_by_day],
+        'data': [entry['count'] for entry in processes_by_day],
+    }
+
+    # Aggregate status breakdown
+    status_breakdown = models.ExecutedProcess.objects.values('status').annotate(count=Count('status')).order_by('status')
+    
+    # Prepare data for the pie chart
+    pie_chart_data = {
+        'labels': [entry['status'] for entry in status_breakdown],
+        'data': [entry['count'] for entry in status_breakdown],
+    }
+
+    context = {
+        'line_chart_data': json.dumps(line_chart_data, cls=DjangoJSONEncoder),
+        'pie_chart_data': json.dumps(pie_chart_data, cls=DjangoJSONEncoder),
+    }
+    
+    return context
 
 def update_node_info(request):
 

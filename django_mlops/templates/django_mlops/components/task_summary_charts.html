@@ -1,0 +1,93 @@
+<style>
+     .pl-status-summary {
+        max-height: 300px;
+    }
+
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="display-6 text-light">Summary</h5>
+            <hr class="title-hr mb-5">
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-6">
+        <canvas class='pl-time-series' id="tasksByDayChart"></canvas>
+    </div>
+    <div class="col-lg-6">
+        <canvas class="pl-status-summary" id="statusBreakdownChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const lineChartData = JSON.parse('{{ line_chart_data|safe }}');
+        const pieChartData = JSON.parse('{{ pie_chart_data|safe }}');
+    
+        const ctx1 = document.getElementById('tasksByDayChart').getContext('2d');
+        const tasksByDayChart = new Chart(ctx1, {
+    type: 'line',
+    data: {
+        labels: lineChartData.labels,
+        datasets: [{
+            label: 'Processes Run by Day',
+            data: lineChartData.data,
+            fill: false,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        interaction: {
+            mode: 'x',
+            intersect: false
+        },
+        plugins: {
+            tooltip: {
+                // Adjusted tooltip interaction settings
+                mode: 'index',
+                intersect: false,
+                position: 'nearest' // Ensures tooltip appears near the vertical position but aligned with x-axis data point
+            }
+        },
+        hover: {
+            mode: 'index',
+            intersect: false
+        }
+    }
+});
+
+        const ctx2 = document.getElementById('statusBreakdownChart').getContext('2d');
+        const statusBreakdownChart = new Chart(ctx2, {
+    type: 'bar', // Change the chart type to 'bar'
+    data: {
+        labels: pieChartData.labels,
+        datasets: [{
+            label: 'Task Status Breakdown',
+            data: pieChartData.data,
+            // Assign colors based on the task status
+            backgroundColor: pieChartData.labels.map(label => {
+                if (label === 'failed') return '#fa7b7b'; // Red
+                else if (label === 'pending') return '#fdf46d'; // Yellow
+                else if (label === 'complete') return '#a7fba7'; // Green
+                else return '#0074D9'; // Default color for unspecified labels
+            }),
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+    });
+    </script>
