@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from django_mlops.tasks_db import run_process_pipeline
+from django_mlops import models as mlops_models
 
  # This is important in order to load up your tasks and allow django_ml_ops to register each task
 from . import pipeline_simple, pipeline_with_nested_tasks, pipeline_simple_ml, pipeline_ml_grid_search 
@@ -26,3 +27,27 @@ def trigger_pipeline_simple_ml(request):
 def trigger_pipeline_ml_grid_search(request):
     run_process_pipeline('pipeline_ml_with_grid_search')
     return HttpResponse("'pipeline_ml_with_grid_search' executed", status=200)
+
+
+def fetch_custom_ml_viz_data(request):
+
+    ''' This is where you fetch or generate your data for visualization '''
+
+    # These are the values in the dropdown
+    executed_process_id = request.GET.get('current_executed_process_id')
+    ml_result_id = request.GET.get('ml_result_option')
+
+    ml_result = mlops_models.MLResult.objects.get(pk=ml_result_id, executed_process__id=executed_process_id)
+    metrics = ml_result.metrics
+    charts = {}
+
+    # Add metrics to the charts dict if they exist in your MLResult metrics
+    if 'confusion_matrix' in metrics:
+        charts['confusion_matrix'] = metrics['confusion_matrix']
+    if 'accuracy_score' in metrics:
+        charts['accuracy_score'] = metrics['accuracy_score']
+    # Repeat for other metrics as necessary
+
+    context = {'charts': charts,}
+
+    return render(request, 'django_mlops/components/ml_result_chart.html', context)

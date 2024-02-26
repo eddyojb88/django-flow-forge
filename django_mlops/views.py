@@ -3,12 +3,12 @@ from . import models
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse
 import json
 from django.core.paginator import Paginator
-from django.db.models import Count, F, DateField
+from django.db.models import Count
 from django.db.models.functions import TruncDay
 from django.shortcuts import render
-from django.core.serializers.json import DjangoJSONEncoder
 import json
 
 from django_mlops.task_utils import get_cytoscape_nodes_and_edges
@@ -78,7 +78,7 @@ def tasks_run_viz(request):
     graph_json = executed_process.process_snapshot['graph']
     graph_json_serialized = json.dumps(graph_json, cls=DjangoJSONEncoder)
 
-    chart_context = summary_chart_view()
+    line_chart_data, pie_chart_data = summary_chart_view()
 
     context = {
         # 'plotly_fig': plot_div,  # The Plotly figure in HTML div format
@@ -87,9 +87,9 @@ def tasks_run_viz(request):
         'page_obj': page_obj,
         'current_executed_process_id': executed_process.id,
         'ml_results': process_ml_results,
+        'line_chart_data': line_chart_data,
+        'pie_chart_data': pie_chart_data,
     }
-
-    context = {**context, **chart_context}
 
     if request.htmx:
 
@@ -118,12 +118,10 @@ def summary_chart_view():
         'data': [entry['count'] for entry in status_breakdown],
     }
 
-    context = {
-        'line_chart_data': json.dumps(line_chart_data, cls=DjangoJSONEncoder),
-        'pie_chart_data': json.dumps(pie_chart_data, cls=DjangoJSONEncoder),
-    }
+    line_chart_data = json.dumps(line_chart_data, cls=DjangoJSONEncoder)
+    pie_chart_data = json.dumps(pie_chart_data, cls=DjangoJSONEncoder)
     
-    return context
+    return line_chart_data, pie_chart_data
 
 def update_node_info(request):
 
@@ -135,24 +133,37 @@ def update_node_info(request):
         if node_id:
 
             executed_process = models.ExecutedProcess.objects.get(id=executed_process_id)
-            executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, process_run=executed_process)
-            executed_task_summary = {}
-            executed_task_summary['output'] = executed_task.output
-            executed_task_summary['start_time'] = executed_task.start_time
-            executed_task_summary['end_time'] = executed_task.end_time
-            executed_task_summary['task_complete'] = executed_task.task_complete
-            context = {'executed_task_summary': executed_task_summary}
 
-            ''' Check if any machine learning experiments associated with node'''
-            ml_results = models.MLResult.objects.filter(executed_process=executed_process)
-            context['ml_result_count'] = len(ml_results)
-            context['ml_results'] = ml_results
-            
+            if models.ExecutedTask.objects.filter(task_snapshot_id=node_id, process_run=executed_process).exists():
+
+                executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, process_run=executed_process)
+                executed_task_summary = {}
+                executed_task_summary['Task Status'] = executed_task.status
+                executed_task_summary['Start Time'] = executed_task.start_time
+                executed_task_summary['End Time'] = executed_task.end_time
+
+                if executed_task.status == 'failed':
+                    executed_task_summary['Exception'] = executed_task.exceptions
+
+                else:    
+                    executed_task_summary['Output'] = executed_task.output
+                
+                context = {'executed_task_summary': executed_task_summary}
+
+                ''' Check if any machine learning experiments associated with node'''
+                ml_results = models.MLResult.objects.filter(executed_process=executed_process)
+                context['ml_result_count'] = len(ml_results)
+                context['ml_results'] = ml_results
+
+            else:
+                logging.warning('No object found for this process task.')
+
+
             return render(request, 'django_mlops/components/clicked_node_info.html', context)
         
     return HttpResponse("Request must be made via HTMX.", status=400)
 
-def display_ml_results(request):
+def display_ml_results_table(request):
 
     executed_process_id = request.GET.get('current_executed_process_id')
     ml_result_id = request.GET.get('ml_result_option')
@@ -162,10 +173,30 @@ def display_ml_results(request):
     else:
         ml_result = None
 
-    context = {}
-    context['ml_result'] = ml_result
+    context = {'ml_result': ml_result,
+               'current_executed_process_id': executed_process_id,}
+    
         
     return render(request, 'django_mlops/components/ml_result.html', context)
+
+def fetch_ml_viz_data(request):
+    # This is where you fetch or generate your data for visualization
+    executed_process_id = request.GET.get('current_executed_process_id')
+    ml_result_id = request.GET.get('ml_result_option')
+    ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_process__id=executed_process_id)
+    metrics = ml_result.metrics
+    charts = {}
+
+    # Add metrics to the charts dict if they exist in your MLResult metrics
+    if 'confusion_matrix' in metrics:
+        charts['confusion_matrix'] = metrics['confusion_matrix']
+    if 'accuracy_score' in metrics:
+        charts['accuracy_score'] = metrics['accuracy_score']
+    # Repeat for other metrics as necessary
+
+    context = {'charts': charts}
+
+    return render(request, 'django_mlops/components/ml_result_chart.html', context)
 
 def switch_value_to_bool(switch):
 

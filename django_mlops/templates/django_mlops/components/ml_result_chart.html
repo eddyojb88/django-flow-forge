@@ -1,0 +1,53 @@
+
+<div class='mt-5' style="width: 400px; height: 400px;">
+    <p class="text-light">Confusion Matrix</p>
+    <canvas id="confusionMatrixChart"></canvas>
+</div>
+<script>
+    (function() {
+        // This creates a new scope every time the script is executed
+        var ctx = document.getElementById('confusionMatrixChart').getContext('2d');
+            
+        var confusionMatrixData = {{ charts.confusion_matrix|safe }};
+    
+        // Flatten the matrix data for the chart
+        var data = [
+            confusionMatrixData[0][0], // True Positive
+            confusionMatrixData[0][1], // False Negative
+            confusionMatrixData[1][0], // False Positive
+            confusionMatrixData[1][1]  // True Negative
+        ];
+    
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['True Positive', 'False Negative', 'False Positive', 'True Negative'],
+                datasets: [{
+                    label: 'Confusion Matrix',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    })();
+    </script>
+    
