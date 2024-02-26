@@ -35,7 +35,7 @@ def register_pipelines():
         clear_existing_process_in_db=True,
         pipeline = {
                     'fetch_data1': {'function': fetch_data1, 'depends_on': []},
-                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1', 'fetch_data2']},
+                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1',]},
                     'analyze_data': {'function': analyze_data, 'depends_on': ['clean_data']},
                     'train_model': {'function': train_model, 'depends_on': ['analyze_data', 'clean_data']},
                     }

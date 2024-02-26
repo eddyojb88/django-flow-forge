@@ -3,3 +3,4 @@ django-htmx
 celery
 scikit-learn
 xgboost
+coverage
