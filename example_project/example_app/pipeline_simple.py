@@ -2,11 +2,6 @@ from django_mlops.tasks_db import register_task_pipeline
 
 from datetime import datetime
 
-
-
-''' Task definitions for 'data_science_project1' '''
-
-# Fetch data function
 def fetch_data1():    
     return 'Some data'
 
