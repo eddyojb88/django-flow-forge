@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/eddyojb88/django_mlops/graph/badge.svg?token=J1V3STRJLZ)](https://codecov.io/gh/eddyojb88/django_mlops)
+
 # django_mlops
  Utilities for Data Scientists and Engineers looking to simplify ML Ops without unnecessary complexity.
 
