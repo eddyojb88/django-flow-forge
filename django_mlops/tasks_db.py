@@ -175,8 +175,7 @@ def run_process_pipeline(process_name, **kwargs):
         
     except Exception as e:
         logging.error(f"Failed to initiate process run for {process_name}: {e}")
-        raise Exception('You may have spelt the process wrong or are referring to a pipeline that no longer exists.')
-        return
+        raise Exception('You may not have imported the pipeline in to the program, have spelt the process wrong or are referring to a pipeline that no longer exists.')
 
     process_pipeline = fetch_process_pipeline(process_name)
     process_snapshot = make_process_snapshot(process_pipeline, task_order)

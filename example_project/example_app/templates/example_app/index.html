@@ -37,6 +37,12 @@
         </button>
     </div>
 
+    <div style="margin-bottom: 25px">
+        <button hx-post="{% url 'trigger_pipeline_simple_with_celery' %}" hx-target="#status" hx-swap="outerHTML">
+            Initiate 'trigger_pipeline_simple_with_celery' Process
+        </button>
+    </div>
+
 
 
     <div id="status"></div>

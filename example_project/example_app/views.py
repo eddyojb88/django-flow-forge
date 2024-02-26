@@ -7,7 +7,7 @@ from django_mlops.tasks_db import run_process_pipeline
 from django_mlops import models as mlops_models
 
  # This is important in order to load up your tasks and allow django_ml_ops to register each task
-from . import pipeline_simple, pipeline_with_nested_tasks, pipeline_simple_ml, pipeline_ml_grid_search 
+from . import pipeline_simple, pipeline_with_nested_tasks, pipeline_simple_ml, pipeline_ml_grid_search , pipeline_simple_with_celery
 
 def index(request):
     return render(request, 'example_app/index.html')
@@ -28,6 +28,9 @@ def trigger_pipeline_ml_grid_search(request):
     run_process_pipeline('pipeline_ml_with_grid_search')
     return HttpResponse("'pipeline_ml_with_grid_search' executed", status=200)
 
+def trigger_pipeline_simple_with_celery(request):
+    run_process_pipeline('trigger_pipeline_simple_with_celery')
+    return HttpResponse("'trigger_pipeline_simple_with_celery' executed", status=200)
 
 def fetch_custom_ml_viz_data(request):
 
@@ -36,7 +39,9 @@ def fetch_custom_ml_viz_data(request):
     # These are the values in the dropdown
     executed_process_id = request.GET.get('current_executed_process_id')
     ml_result_id = request.GET.get('ml_result_option')
-
+    if not ml_result_id or ml_result_id != '':
+        return 'Cannot visualize nothing!'
+    
     ml_result = mlops_models.MLResult.objects.get(pk=ml_result_id, executed_process__id=executed_process_id)
     metrics = ml_result.metrics
     charts = {}

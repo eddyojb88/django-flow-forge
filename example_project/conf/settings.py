@@ -158,4 +158,4 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+CELERY_BROKER_URL = 'amqp://user:password@rabbitmq:5672//' 
