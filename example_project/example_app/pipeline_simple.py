@@ -31,16 +31,6 @@ def analyze_data():
 def train_model():
     return 'Good Result!'
 
-def clean_data():
-    return
-
-def analyze_data():
-    analysis = 'Some Summary Analysis'
-    return {'forecast_date': str(datetime.now()), 'analysis': analysis}
-
-def train_model():
-    print("Training model")
-
 def register_pipelines():
 
     register_task_pipeline(
