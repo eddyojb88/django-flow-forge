@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+
+  django:
+    image: django_mlops_dev
+    build:
+      context: .
+    ports:
+      - 8005:8000
+    volumes:
+      - ./:/app
+    networks:
+      - app-network
+    environment:
+      - ENVIRONMENT_NAME=vscode
+    depends_on:
+      - rabbitmq  # Ensure Django starts after RabbitMQ
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management interface port
+    networks:
+      - app-network
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - "rabbitmq_data:/var/lib/rabbitmq"
+      - "rabbitmq_log:/var/log/rabbitmq"
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_log:
+
+networks:
+  app-network:
+    driver: bridge
+
+networks:
+  app-network:
+    driver: bridge

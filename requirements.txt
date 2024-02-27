@@ -1,4 +1,4 @@
-Django==5
+Django
 django-htmx
 celery
 scikit-learn
