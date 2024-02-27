@@ -8,15 +8,21 @@
 
 # Quick Start (Documentation site coming soon.)
 
+1) It is assumed that you are familiar with Docker. An alternative is to use the requirements file in your own python environment and skip to Step 3.
+
 ```
 docker compose -f docker-compose-local.yml up
 ```
 
 This runs both a Django container and a RabbitMQ container for the async task example with celery.
 
-Next, connect in to the Django docker container.
+2) Next, connect to the Django docker container either with e.g. VSCode or terminal:
 
-There are a series of examples to showcase functionality, mostly without async. If you are not yet interested in async, you can skip the next part but if you are then within the ```example_project``` directory, run:
+ ```
+docker exec -it <your_container_id> bash 
+ ```
+
+3) There are a series of examples to showcase functionality, mostly without async. If you are not yet interested in async, you can skip the next part but if you are then within the ```example_project``` directory, run:
 
 ```
 celery -A example_app  worker --loglevel=info
@@ -24,28 +30,28 @@ celery -A example_app  worker --loglevel=info
 
 This starts the celery instance for the example async task.
 
-Next, run the django server with:
+4) Next, run the django server with:
 
 ```
 python manage.py runserver  0.0.0.0:8000
 ```
 
-With the development server now running, you can view the list of trigger examples at:
+5) With the development server now running, you can view the list of trigger examples at:
 
 ```
 http://localhost:8005/example/
 ```
 
-In order to understand how this is being run, you can view the associated scripts in the ```example_app``` directory,
+6) In order to understand how this is being run, you can view the associated scripts in the ```example_app``` directory,
 with ```pipeline_simple.py``` being the simplest example to view how a pipeline is registered. To view how the pipeline is called, go to ```views.py``` and the ```trigger_pipeline_simple``` function.
 
-Once the task is complete, you can view the pipeline summary and associated info at the following page:
+7) Once the task is complete, you can view the pipeline summary and associated info at the following page:
 
 ```
 http://localhost:8005/django_mlops/task-runs-viz/
 ```
 
-If wanting to conceptualize a task for stakeholders before or during development, you can view the pipeline in concept by going to:
+8) If wanting to conceptualize a task for stakeholders before or during development, you can view the pipeline in concept by going to:
 
 ```
 http://localhost:8005/django_mlops/conceptual-dag-viz/
