@@ -1,7 +1,7 @@
 [![codecov](https://codecov.io/gh/eddyojb88/django_mlops/graph/badge.svg?token=J1V3STRJLZ)](https://codecov.io/gh/eddyojb88/django_mlops)
 
 # django_mlops
- Utilities for Data Scientists and Engineers looking to simplify ML Ops without unnecessary complexity.
+A module for Data Scientists and Engineers looking to standardize and simplify ML Ops without the unnecessary complexity.
 
 ![mlops_gif](https://github.com/eddyojb88/django_mlops/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
 
