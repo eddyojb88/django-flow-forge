@@ -3,6 +3,56 @@
 # django_mlops
  Utilities for Data Scientists and Engineers looking to simplify ML Ops without unnecessary complexity.
 
+![mlops_gif](https://github.com/eddyojb88/django_mlops/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
+
+
+# Quick Start (Documentation site coming soon.)
+
+```
+docker compose -f docker-compose-local.yml up
+```
+
+This runs both a Django container and a RabbitMQ container for the async task example with celery.
+
+Next, connect in to the Django docker container.
+
+There are a series of examples to showcase functionality, mostly without async. If you are not yet interested in async, you can skip the next part but if you are then within the ```example_project``` directory, run:
+
+```
+celery -A example_app  worker --loglevel=info
+```
+
+This starts the celery instance for the example async task.
+
+Next, run the django server with:
+
+```
+python manage.py runserver  0.0.0.0:8000
+```
+
+With the development server now running, you can view the list of trigger examples at:
+
+```
+http://localhost:8005/example/
+```
+
+In order to understand how this is being run, you can view the associated scripts in the ```example_app``` directory,
+with ```pipeline_simple.py``` being the simplest example to view how a pipeline is registered. To view how the pipeline is called, go to ```views.py``` and the ```trigger_pipeline_simple``` function.
+
+Once the task is complete, you can view the pipeline summary and associated info at the following page:
+
+```
+http://localhost:8005/django_mlops/task-runs-viz/
+```
+
+If wanting to conceptualize a task for stakeholders before or during development, you can view the pipeline in concept by going to:
+
+```
+http://localhost:8005/django_mlops/conceptual-dag-viz/
+```
+
+<img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django_mlops/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">
+
 # Motivation
 
 ## Philosophy:
@@ -30,6 +80,7 @@ There is no need to learn any of the enormous packages associated with ML Ops, s
 - Visualization of DAGs, doubling up as a tool for stakeholder interactions (inspired by Kedro)
 
  ## Features to come
+ - Documentation page
  - Implement better authentication and authorization options (at the moment you have to import the views in to urls and add login_required
  - Async capability: allow user to use the dependency tree in the graph in order to wait for relevant tasks that have been offloaded to complete
  - Make stakeholder only facing dashboard to display only tasks that succeeded
