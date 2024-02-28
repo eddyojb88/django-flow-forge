@@ -3,6 +3,8 @@
 # django_mlops
 A module for Data Scientists and Engineers looking to standardize and simplify ML Ops without the unnecessary complexity.
 
+# Note: Currently finishing up documentation.
+
 ![mlops_gif](https://github.com/eddyojb88/django_mlops/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
 
 
