@@ -39,7 +39,7 @@ def fetch_custom_ml_viz_data(request):
     # These are the values in the dropdown
     executed_process_id = request.GET.get('current_executed_process_id')
     ml_result_id = request.GET.get('ml_result_option')
-    if not ml_result_id or ml_result_id != '':
+    if not ml_result_id or ml_result_id == '':
         return 'Cannot visualize nothing!'
     
     ml_result = mlops_models.MLResult.objects.get(pk=ml_result_id, executed_process__id=executed_process_id)
