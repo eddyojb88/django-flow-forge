@@ -1,3 +1,6 @@
 site_name: Django ML Ops
+site_url: https://eddyojb88.github.io/django_mlops/
+docs_dir: 'docs'
+site_dir: 'site'
 theme:
-  name: material
+  name: 'material'
