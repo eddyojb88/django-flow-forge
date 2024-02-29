@@ -1,12 +1,17 @@
 # django_mlops
 
-Ignore the ML Ops salesmen and get back to keeping your ML system simple, flexible and impactful with this handy plugin module for Django, aimed at Architects, Data Scientists and Data Engineers looking to save time by standardizing and simplifying their tech stack, not getting sucked in to development paralysis by vendor lock-in or tech stack complexity.
+!!! Docs in progress. Check back in a couple of days. !!!
+
+Ignore the ML Ops salesmen and get back to keeping your ML system simple, flexible and impactful with this handy plugin module for Django.
+
+This module is for Architects, Data Scientists and Data Engineers looking to save time in the long term by standardizing and simplifying their tech stack, not getting sucked in to vendor lock-in or tech stack complexity when they hit they realise the other packages don't have what they need.
 
 ![mlops_gif](https://github.com/eddyojb88/django_mlops/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
 
 # Motivation
 
-Read the docs for more on this.
+[Read the Docs](https://eddyojb88.github.io/django_mlops/) for more info on this
+
 
 # Features
 
@@ -30,6 +35,8 @@ Read the docs for more on this.
  - Make stakeholder only facing dashboard to display only tasks that succeeded
 
 # Quick Start
+
+Docs are here: [Read the Docs](https://eddyojb88.github.io/django_mlops/).
 
 ```
 docker compose -f docker-compose-local.yml up

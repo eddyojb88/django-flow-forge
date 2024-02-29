@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "django_mlops"
-version = "0.1.1"
+version = "0.1.2"
 description = "A Django app for MLOps: eliminate unnecessary duplication of tools and project complexity"
 authors = [{name = "Your Name", email = "eburmicz@gmail.com"}]
 readme = "README.md"
