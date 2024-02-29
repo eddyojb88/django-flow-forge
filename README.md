@@ -1,7 +1,6 @@
-[![codecov](https://codecov.io/gh/eddyojb88/django_mlops/graph/badge.svg?token=J1V3STRJLZ)](https://codecov.io/gh/eddyojb88/django_mlops)
-
 # django_mlops
- Utilities for Data Scientists and Engineers looking to simplify ML Ops without unnecessary complexity.
+
+Ignore the ML Ops salesmen and get back to keeping your ML system simple, flexible and impactful with this handy plugin module for Django, aimed at Architects, Data Scientists and Data Engineers looking to save time by standardizing and simplifying their tech stack, not getting sucked in to development paralysis by vendor lock-in or tech stack complexity.
 
 # Motivation
 
@@ -15,13 +14,15 @@ An ML system should be simple enough that an ops colleague can
 
 (3) Redeploy the model
 
-MLOps sounds like a made up sales term. However, it is necessary in data science projects to:
+It is necessary in data science projects to:
 
 - Design and keep track of data science projects in a way that can be communicated easily to team members and stakeholders easily
 - Offer optional scalability in data ops or model training in order to find solutions to complex problems
   
-## The problem with the ML Ops ecosystem
-There is no need to learn any of the enormous packages associated with ML Ops, such as Kedro, KubeFlow, Metaflow etc. Even vendor solutions, such as DataBricks. They are all packages with fancy webserves and a lot of bloat without solving the problems they set out to flexibly and robustly, which became the inspiration for Django ML Ops.
+## The State of the ML Ops ecosystem
+It is highly questionable that any of the ML Ops tools, such as Kedro, KubeFlow, Metaflow or vendor solutions such as DataBricks etc. offer what is required to get your project done well, quickly and extensibly. They all appear to be packages with fancy webservers or a lot of bloat without solving the problem flexibly and robustly, which became the inspiration for Django ML Ops.
+
+Lets quantify that statement e.g. the Kedro and Kedro-viz repos have about 430k lines of code. 80% of that is the react based viz and its assets but still, django_mlops has <3k lines of code and it is understood that it can achieve the same features and more.
 
 ## Key Features:
 - Simple and mature framework with Django philosophy of robustness with safety and security
