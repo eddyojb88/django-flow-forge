@@ -2,33 +2,26 @@
 
 Ignore the ML Ops salesmen and get back to keeping your ML system simple, flexible and impactful with this handy plugin module for Django, aimed at Architects, Data Scientists and Data Engineers looking to save time by standardizing and simplifying their tech stack, not getting sucked in to development paralysis by vendor lock-in or tech stack complexity.
 
+![mlops_gif](https://github.com/eddyojb88/django_mlops/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
+
 # Motivation
 
-## Philosophy:
+Read the docs for more on this.
 
-An ML system should be simple enough that an ops colleague can 
+# Features
 
-(1) Find out when it isn’t working properly
-
-(2) Make small changes to it
-
-(3) Redeploy the model
-
-It is necessary in data science projects to:
-
-- Design and keep track of data science projects in a way that can be communicated easily to team members and stakeholders easily
-- Offer optional scalability in data ops or model training in order to find solutions to complex problems
-  
-## The State of the ML Ops ecosystem
-It is highly questionable that any of the ML Ops tools, such as Kedro, KubeFlow, Metaflow or vendor solutions such as DataBricks etc. offer what is required to get your project done well, quickly and extensibly. They all appear to be packages with fancy webservers or a lot of bloat without solving the problem flexibly and robustly, which became the inspiration for Django ML Ops.
-
-Lets quantify that statement e.g. the Kedro and Kedro-viz repos have about 430k lines of code. 80% of that is the react based viz and its assets but still, django_mlops has <3k lines of code and it is understood that it can achieve the same features and more.
-
-## Key Features:
-- Simple and mature framework with Django philosophy of robustness with safety and security
-- Flexible in defining pipelines of tasks with or without a data science context
-- Doesn't tie developers down to any scaling method - the repo includes an example with Celery and RabbbitMQ but it should also scale nicely to Kubernetes or any other package if required
-- Visualization of DAGs, doubling up as a tool for stakeholder interactions (inspired by Kedro)
+- Define your pipeline processes (DAGs) simply
+- Stakeholder facing visualization of your pipeline DAG in concept before and during development
+- Register and execute your pipelines using either a standalone script or use Django website or via a speedy Django-ninja API
+- Task monitoring
+- Visualise pipeline process outputs and failures for each task
+- Display data science experiment results for comparison
+- Serve models with DRF or Django Ninja (FastAPI for Django)
+- Minimal learning if you already know Django
+- Using this with Django means you are not bogged down worrying about security, scalabili
+- Scalable with Django Celery or Kuberenetes or any other extension you want to use
+- Django is a mature framework with lots of security features if you want to serve models 
+- No vendor lockin
 
  ## Features to come
  - Documentation page
@@ -36,10 +29,48 @@ Lets quantify that statement e.g. the Kedro and Kedro-viz repos have about 430k 
  - Async capability: allow user to use the dependency tree in the graph in order to wait for relevant tasks that have been offloaded to complete
  - Make stakeholder only facing dashboard to display only tasks that succeeded
 
+# Quick Start
 
-## Why Django and not Flask, FastAPI etc.
-- Flask and FastAPI are great for starting out as they appear simple. However, every project that uses these tools ends up recreating logic that Django already has but badly and closed sourced. Why duplicate and add complexity?
-- Django is realtively simple to deploy with Docker securely and scalably on any cloud service, keeping options flexible
-- Django-ninja is FastAPI for Django, offering a fast way to serve models in a coupled or decoupled manner
-- Move fast by starting off your project simple with django and decouple as and when you need. As you scale, your app in Django doesnt necessarily need to be rewritten
+```
+docker compose -f docker-compose-local.yml up
+```
 
+This runs both a Django container and a RabbitMQ container for the async task example with celery.
+
+Next, connect in to the Django docker container.
+
+There are a series of examples to showcase functionality, mostly without async. If you are not yet interested in async, you can skip the next part but if you are then within the ```example_project``` directory, run:
+
+```
+celery -A example_app  worker --loglevel=info
+```
+
+This starts the celery instance for the example async task.
+
+Next, run the django server with:
+
+```
+python manage.py runserver  0.0.0.0:8000
+```
+
+With the development server now running, you can view the list of trigger examples at:
+
+```
+http://localhost:8005/example/
+```
+
+In order to understand how this is being run, you can view the associated scripts in the ```example_app``` directory,
+with ```pipeline_simple.py``` being the simplest example to view how a pipeline is registered. To view how the pipeline is called, go to ```views.py``` and the ```trigger_pipeline_simple``` function.
+
+Once the task is complete, you can view the pipeline summary and associated info at the following page:
+
+```
+http://localhost:8005/django_mlops/task-runs-viz/
+```
+
+If wanting to conceptualize a task for stakeholders before or during development, you can view the pipeline in concept by going to:
+
+```
+http://localhost:8005/django_mlops/conceptual-dag-viz/
+
+<img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django_mlops/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">
