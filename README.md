@@ -31,6 +31,7 @@ Lets quantify that statement e.g. the Kedro and Kedro-viz repos have about 430k 
 - Visualization of DAGs, doubling up as a tool for stakeholder interactions (inspired by Kedro)
 
  ## Features to come
+ - Documentation page
  - Implement better authentication and authorization options (at the moment you have to import the views in to urls and add login_required
  - Async capability: allow user to use the dependency tree in the graph in order to wait for relevant tasks that have been offloaded to complete
  - Make stakeholder only facing dashboard to display only tasks that succeeded
