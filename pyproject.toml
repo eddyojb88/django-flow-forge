@@ -23,4 +23,4 @@ dependencies = [
 requires-python = ">=3.9"
 
 [project.urls]
-Homepage = "https://github.com/eddyojb88/django_mlops"
+Homepage = "https://github.com/eddyojb88/django-flow-forge"
