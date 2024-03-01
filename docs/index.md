@@ -1,38 +1,31 @@
-# Welcome to Django ML Ops
+# Welcome to Django Flow Forge
 
-Ignore the ML Ops salesmen and get back to keeping your ML system simple, flexible and impactful with this handy plugin module for Django, aimed at Data Scientists and Data Engineers looking to standardize but simplify their tech stack and not get sucked in to development paralysis from vendor lock-in or the tech stack complexity that other projects feature.
+Django Flow Forge aims to simplify your Data Ops or ML system, steering clear of the unnecessary complexities of other packages and vendor lock-in that plague many projects.
+
+Designed for Data Scientists and Data Engineers, this Django plugin module streamlines your tech stack, focusing on simplicity, flexibility, and impact.
 
 # Features
 
-- Define your pipeline processes (DAGs) simply
-- Stakeholder facing visualization of your pipeline DAG in concept before and during development
-- Register and execute your pipelines using either a standalone script or use Django website or via a speedy Django-ninja API
-- Task monitoring
+- Easily define your flows / pipeline processes as a DAG
+- Visualize your flows for stakeholders, both in planning and development phases (inspired by Kedro)
+- Simple pipeline registration and execution through a script, Django website or via an API by plugging in Django-ninja (Fast API for Django))
+- Task monitoring and visualization of outputs and failures
 - Visualise pipeline process outputs and failures for each task
-- Display data science experiment results for comparison
-- Serve models with DRF or Django Ninja (FastAPI for Django)
-- Minimal learning if you already know Django
-- Using this with Django means you are not bogged down worrying about security, scalabili
-- Scalable with Django Celery or Kuberenetes or any other extension you want to use
-- Django is a mature framework with lots of security features if you want to serve models 
-- No vendor lockin
+- Compare data science experiment results easily (inspired by Kedro)
+- Serve your models by plugging in Django Ninja
+- A familiar environment for Django users, minimizing the learning curve
+- Leverage Django's robust security
+- Leverage Django's existing scalability features, including Django Celery and flexbility with Kubernetes engines, without the worry of vendor lock-in
+- Encourages teams to move away from Notebooks, which cause a plethora of issues
 
 # Motivation
-
-This package is inspired by the following articles that either discuss or show cyncisism towards MLOps:
-
-- [Do you need ML Ops](https://medium.com/@eddyojb/thoughts-you-wont-get-from-chatgpt-do-you-need-ml-ops-2c954b9d47a6)
-- [No, you dont need ML Ops](https://becominghuman.ai/no-you-dont-need-mlops-5e1ce9fdaa4b)
-- [I dont like Notebooks/Collab](https://www.youtube.com/watch?v=7jiPeIFXb6U)
-
-## Philosophy:
 
 It is necessary in data science projects to:
 
 - Design and keep track of data science projects in a way that can be easily communicated to team members and stakeholders
 - Offer scalability when gathering data or model training in order to find (much) better solutions to complex problems
 
-An ML system should also be simple enough that an ops colleague can:
+An ML system should also be simple enough that colleagues can:
 
 (1) Find out when it isn’t working properly
 
@@ -40,9 +33,16 @@ An ML system should also be simple enough that an ops colleague can:
 
 (3) Redeploy the model
 
-In most cases, we probably don't need any of the ML Ops tools out there. Lets also face reality that in a lot of cases, the problems can be attributed to bad or zero code design and the use of notebooks.
+In most cases, you dont need any of the highly specialised ML Ops tools out there. Analysis reveals that in many cases, issues in, for example, machine learning operations can be attributed to bad code design and the use of notebooks.
+
+## Inspiration
+
+This package is inspired by the following articles that challenge the prevailing ML Ops narrative, drawing inspiration from critical discussions on the necessity and implementation of MLOps. This module seeks to avoid the pitfalls of overcomplication and excessive relaiance on overly specialized tools:
+
+- [No, you dont need ML Ops](https://becominghuman.ai/no-you-dont-need-mlops-5e1ce9fdaa4b)
+- [Do you need ML Ops](https://medium.com/@eddyojb/thoughts-you-wont-get-from-chatgpt-do-you-need-ml-ops-2c954b9d47a6)
+- [I dont like Notebooks/Collab](https://www.youtube.com/watch?v=7jiPeIFXb6U)
+
 
 ## The State of the ML Ops ecosystem
-The open source tools are a mess and vendor solutions generally unsuitable and expensive without having what is required to get your project done well, quickly and extensibly. They all appear to be packages with fancy webservers or a lot of bloat without solving the problem flexibly and robustly, which became the inspiration for Django ML Ops.
-
-Lets quantify that statement e.g. the Kedro and Kedro-viz repos have about approx. 430k lines of code. 80% of that is the React based viz and its associated assets. However, django_mlops has <3k lines of code and it is understood that it can achieve the same features and more. See the features list which describes why this module ticks all boxes for our team.
+The current MLOps landscape is cluttered with overengineered solutions. Analysis reveals a stark contrast in codebase size and functionality, with Django Flow Forge offering a lean yet powerful alternative to help solve end to end solutions (<3k of code vs Kedro with 430k lines of code!). Yet all other [tools analysed](https://medium.com/@eddyojb/thoughts-you-wont-get-from-chatgpt-do-you-need-ml-ops-2c954b9d47a6) have significant deficiencies. The features of Django Flow Forge are designed to meet a vision for a more accessible and flexible ML operational environment.

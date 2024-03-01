@@ -3,13 +3,13 @@ requires = ["flit_core >=3.4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "django_mlops"
+name = "django-flow-forge"
 version = "0.1.2"
-description = "A Django app for MLOps: eliminate unnecessary duplication of tools and project complexity"
-authors = [{name = "Your Name", email = "eburmicz@gmail.com"}]
+description = "Eliminate unnecessary system complexity in Data Ops and in Machine Learning Ops (MLOps) with this Django module for defining, running and monitoring flows."
+authors = [{name = "Ed Burmicz",}]
 readme = "README.md"
-license = {text = "MIT"}  # Adjust if you have a LICENSE file or another license
-keywords = ["django", "mlops"]
+license = {text = "MIT"} 
+keywords = ["django", "mlops", "data", "machine learning", "data science", "pipelines"]
 classifiers = [
     "Framework :: Django",
     "Programming Language :: Python :: 3",
@@ -18,8 +18,7 @@ classifiers = [
 ]
 dependencies = [
     "Django>=5",
-    # "Celery",
-    # Add other dependencies as needed
+    "django-htmx",
 ]
 requires-python = ">=3.9"
 

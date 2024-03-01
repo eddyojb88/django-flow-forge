@@ -1,32 +1,28 @@
-# django_mlops
+# django-flow-forge
 
-!!! Docs in progress. Check back in a couple of days. !!!
+Django Flow Forge aims to simplify your Data Ops or ML system, steering clear of the unnecessary complexities of other packages and vendor lock-in that plague many projects.
 
-Ignore the ML Ops salesmen and get back to keeping your ML system simple, flexible and impactful with this handy plugin module for Django.
+Designed for Data Scientists and Data Engineers, this Django plugin module streamlines your tech stack, focusing on simplicity, flexibility, and impact.
 
-This module is for Architects, Data Scientists and Data Engineers looking to save time in the long term by standardizing and simplifying their tech stack, not getting sucked in to vendor lock-in or tech stack complexity when they hit they realise the other packages don't have what they need.
-
-![mlops_gif](https://github.com/eddyojb88/django_mlops/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
+![mlops_gif](https://github.com/eddyojb88/django-flow-forge/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
 
 # Motivation
 
-[Read the Docs](https://eddyojb88.github.io/django_mlops/) for more info on this
-
+[Read the Docs](https://eddyojb88.github.io/django-flow-forge/) for more info on this
 
 # Features
 
-- Define your pipeline processes (DAGs) simply
-- Stakeholder facing visualization of your pipeline DAG in concept before and during development
-- Register and execute your pipelines using either a standalone script or use Django website or via a speedy Django-ninja API
-- Task monitoring
-- Visualise pipeline process outputs and failures for each task
-- Display data science experiment results for comparison
-- Serve models with DRF or Django Ninja (FastAPI for Django)
-- Minimal learning if you already know Django
-- Using this with Django means you are not bogged down worrying about security, scalabili
-- Scalable with Django Celery or Kuberenetes or any other extension you want to use
-- Django is a mature framework with lots of security features if you want to serve models 
-- No vendor lockin
+- Easily define your flows / pipeline processes as a DAG
+- Visualize your flows for stakeholders, both in planning and development phases (inspired by Kedro)
+- Simple pipeline registration and execution through a script, Django website or via an API by plugging in Django-ninja (Fast API for Django))
+- Task monitoring and visualization of outputs and failures.
+- Visualise pipeline process outputs and failures for each task (inspired by Kedro)
+- Compare data science experiment results easily
+- Serve your models by plugging in Django Ninja
+- A familiar environment for Django users, minimizing the learning curve
+- Leverage Django's robust security
+- Leverage Django's existing scalability features, including Django Celery and flexbility with Kubernetes engines, without the worry of vendor lock-in
+- Encourages teams to move away from Notebooks, which cause a plethora of issues
 
  ## Features to come
  - Documentation page
@@ -36,7 +32,7 @@ This module is for Architects, Data Scientists and Data Engineers looking to sav
 
 # Quick Start
 
-Docs are here: [Read the Docs](https://eddyojb88.github.io/django_mlops/).
+Docs are here: [Read the Docs](https://eddyojb88.github.io/django-flow-forge/).
 
 ```
 docker compose -f docker-compose-local.yml up
@@ -72,12 +68,12 @@ with ```pipeline_simple.py``` being the simplest example to view how a pipeline 
 Once the task is complete, you can view the pipeline summary and associated info at the following page:
 
 ```
-http://localhost:8005/django_mlops/task-runs-viz/
+http://localhost:8005/django-flow-forge/task-runs-viz/
 ```
 
 If wanting to conceptualize a task for stakeholders before or during development, you can view the pipeline in concept by going to:
 
 ```
-http://localhost:8005/django_mlops/conceptual-dag-viz/
+http://localhost:8005/django-flow-forge/conceptual-dag-viz/
 
-<img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django_mlops/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">
+<img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django-flow-forge/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">

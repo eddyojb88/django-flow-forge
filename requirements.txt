@@ -1,6 +1,6 @@
 Django
 django-htmx
+django_mlops
 celery
 scikit-learn
 xgboost
-coverage
