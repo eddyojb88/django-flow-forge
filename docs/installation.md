@@ -1,13 +1,15 @@
-# Install via Pip
+# Installation
+
+##    Install via Pip
 
 ```pip install django_flow_forge```
 
 However, if new to this module see the next section
 
-# Quickstart
+## Quickstart
 It is recommended to clone the repo in order to view the ```example_project``` in action.
 
-## Docker
+### Docker
 
 Once cloned, the quickest route to viewing if you have Docker installed is:
 
@@ -15,7 +17,7 @@ Once cloned, the quickest route to viewing if you have Docker installed is:
 
 Then log in to the django container
 
-## Pip:
+### Pip:
 
 Once the repo has been cloned, you can either install the requirements in your virtual env (virtualenv, conda etc). e.g.
 
@@ -23,7 +25,7 @@ Once the repo has been cloned, you can either install the requirements in your v
 
 However, if you are interested in viewing how tasks in async are run in the ```pipeline_simple_with_celery.py``` example, you will also need a task server running, such as RabbitMQ or Redis. The recommended way to view this simply is to use the docker-compose file in the step above.
 
-## Applying Migration to Database
+### Applying Migration to Database
 
 The database is a sqlite file with code in the example project to modify it so that it can allow celery to interact with it.
 N.B. a production solution is a database like Postgres or warehouse like Snowflake.
@@ -32,7 +34,7 @@ Go in to the ```example_project``` directory and migrate the DB:
 
 ```python manage.py migrate```
 
-## Enable registering of flows
+### Enable registering of flows
 Now that the database has a recognition of Flows and Tasks, go in to ```views.py``` within the ```example_app``` and uncomment the 
 line ```# from . import pipeline_simple, pipeline_with_nested_tasks...```
 
@@ -44,7 +46,7 @@ This allows these scripts to be included as part of the project scope. At the bo
 
 N.B. Pipeline is taken to mean the same as a 'Flow'.  However, pipelines sound rigid, which this module isn't supposed to be. The disctinction isn't actually clear - A decade ago they were always called flows.
 
-## Start Celery Worker (Optional):
+### Start Celery Worker (Optional):
 
 In a new terminal window:
 

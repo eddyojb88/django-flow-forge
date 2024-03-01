@@ -1,4 +1,6 @@
-# Features
+# Flow Dashboard
+
+## Features
 
 - Task monitoring (there is auto-checkpoints between Tasks)
 - Visualize a Flow in terms of its Tasks, dependecy tree and Task status. Clicking on nodes allows you to inspect the status and output
