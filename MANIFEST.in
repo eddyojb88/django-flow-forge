@@ -1,5 +1,5 @@
 include LICENSE
 include README.md
-recursive-include django_mlops/static *
-recursive-include django_mlops/templates *
+recursive-include django_flow_forge/static *
+recursive-include django_flow_forge/templates *
 recursive-include docs *

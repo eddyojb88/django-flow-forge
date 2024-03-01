@@ -1,0 +1,26 @@
+
+<div id="cytoscape-and_ml-outer-row" class="row">
+    <h3 class="display-6 text-light">Process Graph</h3>
+    <hr class="title-hr mb-5">
+    
+    <div id="data-div1" class="text-light d-none"
+        hx-get="{% url 'update-node-info' %}"
+        hx-trigger="tap from:#data-div1" 
+        hx-target="#node-output"
+        hx-swap="innerHTML"
+        hx-include="#current_executed_flow_option"
+        hx-vals='js:{clicked_node_id: event.detail["clicked_node_id"]}'>
+    </div>
+
+    <div class="col-lg-6">
+        {% include 'django_flow_forge/components/dag_cyto_clickable_script.html' %}
+        
+    </div>
+
+    <div id="node-output" class="text-light col-lg-6"></div>
+
+    <div id ='ml-col' class="col-lg-12">
+        {% include 'django_flow_forge/components/ml_results_container.html' %}
+    </div>
+
+</div>

@@ -3,7 +3,7 @@ version: '3.9'
 services:
 
   django:
-    image: django_mlops_dev
+    image: django_flow_forge_dev
     build:
       context: .
     ports:
@@ -34,10 +34,6 @@ services:
 volumes:
   rabbitmq_data:
   rabbitmq_log:
-
-networks:
-  app-network:
-    driver: bridge
 
 networks:
   app-network:

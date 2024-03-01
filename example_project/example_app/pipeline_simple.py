@@ -1,4 +1,4 @@
-from django_mlops.tasks_db import register_task_pipeline
+from django_flow_forge.tasks_db import register_task_pipeline
 
 from datetime import datetime
 
@@ -34,8 +34,8 @@ def train_model():
 def register_pipelines():
 
     register_task_pipeline(
-        process_name='pipeline_simple',
-        clear_existing_process_in_db=True,
+        flow_name='pipeline_simple',
+        clear_existing_flow_in_db=True,
         pipeline = {
                     'fetch_data1': {'function': fetch_data1, 'depends_on': []},
                     'fetch_data2': {'function': fetch_data2, 'depends_on': []},

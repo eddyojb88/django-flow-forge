@@ -1,0 +1,70 @@
+
+
+{% block ml_table_results %}
+
+    <h3 class="display-6 mt-5 text-light">ML Results</h3>
+    <hr class="title-hr mb-5">
+
+            <div class="row">
+                <div class="col">
+                    
+                        <label class="mb-3 text-light">Select ML Experiment for this Executed Process:</label>
+                        <select name='ml_result_option' 
+                                class="form-control"
+                                id="select-ml-experiment" 
+                                hx-get="{% url 'display_ml_results' %}"
+                                hx-trigger="load,change"
+                                hx-target="#ml-result-table"
+                                hx-swap="outerHTML"
+                                hx-include="this"
+                                hx-vals='{"current_executed_flow_id": "{{ current_executed_flow_id }}"}'
+                                >
+                                {% for m in ml_results %}
+                                    <option value="{{ m.id }}" {% if forloop.first %}selected{% endif %}>
+                                        {{ m }}
+                                    </option>
+                                {% endfor %}
+                        </select> 
+                </div>
+                
+            </div>
+            <div class="row">
+                {% if ml_results|length >= 1 %}
+                    {% include 'django_flow_forge/components/ml_result.html' %}
+                {% else %}
+                    <p class="text-light mt-2"> No known machine learning tasks saved for this flow</p>
+                {% endif %}
+            </div>
+
+{% endblock ml_table_results %}
+
+{% block ml_viz_container %}
+        <div class="row">
+
+            <div class="col-lg-6 mt-3">
+
+                {% block ml_viz_button %}
+                    <button hx-get="{% url 'fetch_ml_viz_data' %}" 
+                            hx-target="#ml-result-viz-content" 
+                            hx-swap="innerHTML"
+                            hx-trigger="click" 
+                            hx-include="[name='ml_result_option']"
+                            hx-vals='{"current_executed_flow_id": "{{ current_executed_flow_id }}"}'
+                            class="btn btn-primary"> 
+                            Visualize
+                    </button>
+                {% endblock ml_viz_button %}
+
+            </div>
+
+            {% block ml_viz_content %}
+
+                <div class="col-lg-12" id="ml-result-viz-content"></div>
+                            
+            {% endblock ml_viz_content %}
+            
+        </div>
+{% endblock ml_viz_container %}
+
+        
+

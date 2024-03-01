@@ -1,0 +1,51 @@
+<div id='ml-result-table' class="col-lg-12 mt-5">
+    
+    <!-- <h1 class="text-light"> Debug: {{ current_executed_flow_id }} </h1> -->
+
+    <table class="table table-striped table-bordered table-dark table-hover table-sm">
+
+        <thead>
+            <tr>
+                <th>Attribute</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Algorithm</td>
+                <td>{{ ml_result.algorithm }}</td>
+            </tr>
+            <tr>
+                <td>Experiment</td>
+                <td>{{ ml_result.experiment }}</td>
+            </tr>
+            <tr>
+                <td>Dataset</td>
+                <td>{{ ml_result.dataset }}</td>
+            </tr>
+
+            <tr>
+                <td>Parameters</td>
+                <td><pre>{{ ml_result.parameters|safe }}</pre></td>
+            </tr>
+            <tr>
+                <td>Metrics</td>
+                <td><pre>{{ ml_result.metrics|safe }}</pre></td>
+            </tr>
+            <tr>
+                <td>Model File Location</td>
+                <td>{{ ml_result.result_file_path }}</td>
+            </tr>
+            <tr>
+                <td>Created At</td>
+                <td>{{ ml_result.created_at }}</td>
+            </tr>
+            <tr>
+                <td>Notes</td>
+                <td>{{ ml_result.notes }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+</div>

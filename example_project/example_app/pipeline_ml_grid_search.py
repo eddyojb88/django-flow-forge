@@ -1,5 +1,5 @@
-from django_mlops.tasks_db import register_task_pipeline
-from django_mlops.models import ExecutedProcess, MLResult
+from django_flow_forge.tasks_db import register_task_pipeline
+from django_flow_forge.models import ExecutedFlow, MLResult
 
 from datetime import datetime
 from sklearn.ensemble import RandomForestClassifier
@@ -17,7 +17,7 @@ def fetch_data1():
 
 # Fetch data function
 def fetch_data2():
-    # Additional data fetching process
+    # Additional data fetching flow
     fetch_data_nested_1()
     fetch_data_nested_2()
     # In a real-world scenario, this could be fetching data from another source
@@ -102,9 +102,9 @@ def grid_search_multiple_models(**kwargs):
             'confusion_matrix': conf_matrix_list
         }
 
-        executed_process = ExecutedProcess.objects.get(pk=kwargs['executed_process_id'])
+        executed_flow = ExecutedFlow.objects.get(pk=kwargs['executed_flow_id'])
         ml_result = MLResult.objects.create()
-        ml_result.executed_process = executed_process
+        ml_result.executed_flow = executed_flow
         ml_result.experiment = 'Simple grid Search and store best params.'
         ml_result.algorithm = model_name
         ml_result.parameters = best_params
@@ -119,8 +119,8 @@ def grid_search_multiple_models(**kwargs):
 def register_pipelines():
 
     register_task_pipeline(
-        process_name='pipeline_ml_with_grid_search', 
-        clear_existing_process_in_db=True,
+        flow_name='pipeline_ml_with_grid_search', 
+        clear_existing_flow_in_db=True,
         pipeline = {
                     'fetch_data2': {'function': fetch_data2, 'depends_on': []},
                     'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1', 'fetch_data2']},

@@ -1,0 +1,74 @@
+        <!-- Placeholder for HTMX response handling -->
+        <div id="cy-graph" style="min-width: 600px; height: 600px;" class="rounded"></div>
+        <input type="hidden" class="include-input" id='current_executed_flow_option' name="current_executed_flow_option" value={{ current_executed_flow_id }}>
+        
+        <script>
+        // Initialize Cytoscape with default layout
+        var cy = cytoscape({
+            container: document.getElementById('cy-graph'),
+            elements: {{ graph_json|safe}},
+            style: [ // Updated styling for visibility against black background
+                        {
+                            selector: 'node',
+                            style: {
+                                'background-color': '#0074D9',
+                                'label': 'data(label)', // Use the 'label' field from the node's data for the label
+                                'color': '#fff',  // Ensure text is white for visibility
+                                'text-valign': 'center',
+                                'text-halign': 'center',
+                                'font-size': '9px' // Adjust font size here, e.g., 10px for smaller text
+                            }
+                        },
+                        
+                        {
+                            selector: 'edge',
+                            style: {
+                                'width': 2,
+                                'line-color': '#fff',  // Edge line color set to white
+                                'target-arrow-color': '#fff',  // Arrow color set to white
+                                'target-arrow-shape': 'triangle',  // Arrow shape
+                                'curve-style': 'bezier'
+                            }
+                        }
+                    ],
+            layout: {
+                name: 'dagre',
+                nodeSep: 120, // Increase node separation; adjust as needed
+                edgeSep: 50, // Increase edge separation; adjust as needed
+                rankSep: 30 // Increase rank separation; adjust as needed
+            }
+        });
+
+        function getNodeColor(status) {
+                    switch(status) {
+                        // case 'complete': return '#2ECC40'; // Green
+                        case 'complete': return '#7bd17b'; 
+                        case 'failed': return '#fa7b7b'; // Red
+                        case 'pending': return '#fdf46d'; // Yellow
+                        default: return '#0074D9'; // Default blue
+                    }
+                }
+
+        // Apply dynamic background color based on 'status'
+        cy.nodes().forEach(function(node) {
+            var status = node.data('status'); // Assuming 'status' is stored in each node's data
+            var color = getNodeColor(status);
+            node.style('background-color', color);
+        });
+
+        // Add event listener for node clicks
+        cy.on('tap', 'node', function(evt){
+
+            var nodeId = (typeof evt.target.id == 'function') ? evt.target.id() : ""
+            var executedProcessId = "{{ current_executed_flow_id }}"; // Render Django variable into JS
+
+            // Trigger HTMX request upon clicking the node
+            console.log('Sending click event to body with node id: ' + nodeId + ' and executedProcessID: ' + executedProcessId)
+            htmx.trigger(htmx.find('#data-div1'), "tap", {'clicked_node_id':nodeId, 'executed_flow_option': executedProcessId});
+
+
+        });
+
+
+        
+        </script>

@@ -8,7 +8,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'conf.settings')
 app = Celery('example_app')
 
 # Using a string here means the worker doesn't have to serialize
-# the configuration object to child processes.
+# the configuration object to child flowes.
 # - namespace='CELERY' means all celery-related configuration keys
 #   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings', namespace='CELERY')

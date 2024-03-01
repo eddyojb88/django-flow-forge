@@ -1,0 +1,32 @@
+{% extends "django_flow_forge/components/ml_results_container.html" %}
+
+{% block ml_table_results %}
+    {{ block.super }}
+{% endblock ml_table_results %}
+
+{% block ml_viz_container %}
+    <div class="row">
+
+        <div class="col-lg-6 mt-3">
+
+            {% block ml_viz_button %}
+
+                <button hx-get="{% url 'fetch_custom_ml_viz_data' %}" 
+                hx-target="#ml-result-viz-content" 
+                hx-swap="innerHTML"
+                hx-trigger="click" 
+                hx-include="[name='ml_result_option']" 
+                hx-vals='{"current_executed_flow_id": "{{ current_executed_flow_id }}"}'
+                class="btn btn-primary"> 
+                Visualize
+                </button>
+
+            {% endblock ml_viz_button %}
+
+            {% block ml_viz_content %}
+                <div class="col-lg-12" id="ml-result-viz-content"></div>                    
+            {% endblock ml_viz_content %}
+
+        </div>
+    </div>
+{% endblock ml_viz_container %}

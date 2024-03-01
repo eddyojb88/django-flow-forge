@@ -1,12 +1,13 @@
 # Welcome to Django Flow Forge
 
-Django Flow Forge aims to simplify your Data Ops or ML system, steering clear of the unnecessary complexities of other packages and vendor lock-in that plague many projects.
+Django Flow Forge aims to simplify your Data Ops or ML system, steering clear of the unnecessary complexities of other packages and vendor lock-in that plague many data ops and ML projects.
 
-Designed for Data Scientists and Data Engineers, this Django plugin module streamlines your tech stack, focusing on simplicity, flexibility, and impact.
+## Designed for Data Scientists and Data Engineers
+By relying on Django, a mature server framework with modules that already solves a lot of problems in ML Ops, this Django plugin module streamlines your tech stack in Data or ML Ops, focusing on simplicity, flexibility, and impact.
 
 # Features
 
-- Easily define your flows / pipeline processes as a DAG
+- Easily define your flows (aka pipeline) as a DAG
 - Visualize your flows for stakeholders, both in planning and development phases (inspired by Kedro)
 - Simple pipeline registration and execution through a script, Django website or via an API by plugging in Django-ninja (Fast API for Django))
 - Task monitoring and visualization of outputs and failures

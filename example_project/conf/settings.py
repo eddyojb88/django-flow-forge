@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'example_app',
-    'django_mlops',
+    'django_flow_forge',
     'django_htmx',
 ]
 

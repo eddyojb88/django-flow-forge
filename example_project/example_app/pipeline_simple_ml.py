@@ -1,5 +1,5 @@
-from django_mlops.tasks_db import register_task_pipeline
-from django_mlops.models import ExecutedProcess, MLResult
+from django_flow_forge.tasks_db import register_task_pipeline
+from django_flow_forge.models import ExecutedFlow, MLResult
 
 from datetime import datetime
 from sklearn.datasets import make_classification
@@ -65,9 +65,9 @@ def train_model(**kwargs):
         'f1_score': f1
     }
 
-    executed_process = ExecutedProcess.objects.get(pk=kwargs['executed_process_id'])
+    executed_flow = ExecutedFlow.objects.get(pk=kwargs['executed_flow_id'])
     ml_result = MLResult.objects.create()
-    ml_result.executed_process = executed_process
+    ml_result.executed_flow = executed_flow
     ml_result.experiment = 'Experiment with synthetic data.'
     ml_result.algorithm = 'xgboost'
     ml_result.parameters = params
@@ -79,8 +79,8 @@ def train_model(**kwargs):
 def register_pipelines():
 
     register_task_pipeline(
-        process_name='pipeline_simple_ml', 
-        clear_existing_process_in_db=True,
+        flow_name='pipeline_simple_ml', 
+        clear_existing_flow_in_db=True,
         pipeline = {
                     'fetch_data2': {'function': fetch_data2, 'depends_on': []},
                     'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1', 'fetch_data2']},

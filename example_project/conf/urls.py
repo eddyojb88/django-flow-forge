@@ -20,5 +20,5 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('example/', include('example_app.urls')),
-    path('django_mlops/', include('django_mlops.urls')),
+    path('django_flow_forge/', include('django_flow_forge.urls')),
 ]
