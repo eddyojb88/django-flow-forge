@@ -1,6 +1,4 @@
-Django
-django-htmx
-django_mlops
+django-flow-forge
 celery
 scikit-learn
 xgboost
