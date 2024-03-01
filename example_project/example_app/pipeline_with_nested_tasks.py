@@ -27,7 +27,7 @@ def analyze_data():
     # Load data, analyse it then store and return an output
     return {'forecast_date': str(datetime.now()), 'analysis': 'Some Summary Analysis'}
 
-def train_model(**kwargs):    
+def post_process_function(**kwargs):    
     return 'A great result!'
 
 def register_pipelines():
@@ -49,7 +49,7 @@ def register_pipelines():
                                     },
                     'clean_data': {'function': clean_data, 'depends_on': ['fetch_data']},
                     'analyze_data': {'function': analyze_data, 'depends_on': ['clean_data']},
-                    'train_model': {'function': train_model,'depends_on': ['analyze_data']}
+                    'post_process_function': {'function': post_process_function,'depends_on': ['analyze_data']}
             }
 
     register_task_pipeline(flow_name='pipeline_with_nested_tasks', pipeline=ds_pipeline, clear_existing_flow_in_db=True)

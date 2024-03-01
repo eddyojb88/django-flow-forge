@@ -28,7 +28,7 @@ def analyze_data():
     return {'forecast_date': str(datetime.now()), 'analysis': analysis}
 
 # Training model function
-def train_model():
+def some_post_process_function():
     return 'Good Result!'
 
 def register_pipelines():
@@ -41,7 +41,7 @@ def register_pipelines():
                     'fetch_data2': {'function': fetch_data2, 'depends_on': []},
                     'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1', 'fetch_data2']},
                     'analyze_data': {'function': analyze_data, 'depends_on': ['clean_data']},
-                    'train_model': {'function': train_model, 'depends_on': ['analyze_data', 'clean_data']},
+                    'some_post_process_function': {'function': some_post_process_function, 'depends_on': ['analyze_data', 'clean_data']},
                     }
 
     )

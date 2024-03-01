@@ -7,7 +7,8 @@ from django_flow_forge.tasks_db import run_flow_pipeline
 from django_flow_forge import models as mlops_models
 
  # This is important in order to load up your tasks and allow django_ml_ops to register each task
-from . import pipeline_simple, pipeline_with_nested_tasks, pipeline_simple_ml, pipeline_ml_grid_search , pipeline_simple_with_celery
+from . import pipeline_simple, pipeline_with_nested_tasks, pipeline_simple_ml, pipeline_ml_grid_search
+from . import  pipeline_simple_with_celery
 
 def index(request):
     return render(request, 'example_app/index.html')

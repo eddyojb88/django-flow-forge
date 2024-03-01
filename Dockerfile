@@ -2,36 +2,34 @@
 
 FROM nvidia/cuda:11.7.1-runtime-ubuntu22.04
 
-RUN apt-get update && apt-get install -y software-properties-common
-RUN apt-get install -y g++-11 make python3 python-is-python3 pip python3.10-venv 
+# Update and install dependencies
+RUN apt-get update && \
+    apt-get install -y software-properties-common g++-11 make python3 python-is-python3 pip python3.10-venv build-essential libpq-dev && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 
-RUN apt-get install -y build-essential libpq-dev
-
-# For Django:
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata 
-
+# Set Python to not buffer output
 ENV PYTHONUNBUFFERED=1
 
+# Copy requirements.txt to the container
 COPY requirements.txt .
 
-# Install python venv and upgrade pip, install postgres client and requirements
-RUN python -m venv /py && /py/bin/pip install --upgrade pip
+# Upgrade pip and install dependencies from requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-RUN /py/bin/pip install -r requirements.txt
-
+# Copy the current directory contents into the container at /app
 COPY . /app
 
+# Set the working directory to /app
 WORKDIR /app
-RUN mkdir -p /app/temp
 
-RUN mkdir -p /vol/web/static && \
-    mkdir -p /vol/web/media
+# Create necessary directories
+RUN mkdir -p /app/temp /vol/web/static /vol/web/media
 
-RUN DEBIAN_FRONTEND=noninteractive adduser --disabled-password --no-create-home  --gecos "" app  && \
+# Create a user for running applications
+RUN DEBIAN_FRONTEND=noninteractive adduser --disabled-password --no-create-home --gecos "" app && \
     chown -R app:app /vol && \
-    chmod -R 777 /py && \
-    chown -R app /app && \
-    chown -R app:app /py/ && \
+    chown -R app:app /app && \
     chmod -R 755 /vol
 
+# Command to run on container start
 CMD sleep infinity

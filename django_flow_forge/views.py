@@ -44,7 +44,7 @@ def conceptual_dag_viz(request,):
     if request.htmx:
 
         # Render a partial template with the new Cytoscape graph
-        html = render_to_string('django_flow_forge/components/dag_cyto_conceptual_script .html', {'graph_json': graph_json_serialized})
+        html = render_to_string('django_flow_forge/components/dag_cyto_conceptual_script.html', {'graph_json': graph_json_serialized})
         return HttpResponse(html)
 
     return render(request, 'django_flow_forge/dag_conceptual_index.html', context=context)
