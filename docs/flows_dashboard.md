@@ -1,8 +1,8 @@
 # Features
 
-- Task monitoring
+- Task monitoring (there is auto-checkpoints between Tasks)
+- Visualize a Flow in terms of its Tasks, dependecy tree and Task status. Clicking on nodes allows you to inspect the status and output
 
-- Auto-checkpoints between tasks
 - Outputs for your machine learning algorithms
 
 You the developer need to define what the machine learning outputs are, which are saved to the MLResults object.
