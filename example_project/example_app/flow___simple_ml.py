@@ -1,4 +1,4 @@
-from django_flow_forge.tasks_db import register_task_pipeline
+from django_flow_forge.tasks_db import register_task_flow
 from django_flow_forge.models import ExecutedFlow, MLResult
 
 from datetime import datetime
@@ -9,11 +9,6 @@ from sklearn.model_selection import train_test_split
 import xgboost as xgb
 
 def fetch_data1():
-    # Generating synthetic data for classification
-    X, y = make_classification(n_samples=1000, n_features=10, n_classes=2, random_state=42)
-    return X, y
-
-def fetch_data2():
     return
 
 def clean_data():
@@ -27,7 +22,7 @@ def analyze_data():
 
 def train_model(**kwargs):
     # Generating synthetic data for demonstration
-    X, y = fetch_data1()
+    X, y = make_classification(n_samples=1000, n_features=10, n_classes=2, random_state=42)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     # Training XGBoost model
@@ -78,12 +73,12 @@ def train_model(**kwargs):
 
 def register_pipelines():
 
-    register_task_pipeline(
+    register_task_flow(
         flow_name='pipeline_simple_ml', 
         clear_existing_flow_in_db=True,
         pipeline = {
-                    'fetch_data2': {'function': fetch_data2, 'depends_on': []},
-                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1', 'fetch_data2']},
+                    'fetch_data1': {'function': fetch_data1, 'depends_on': []},
+                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1']},
                     'analyze_data': {'function': analyze_data, 'depends_on': ['clean_data']},
                     'train_model': {'function': train_model, 'depends_on': ['analyze_data']},
                    }

@@ -1,4 +1,7 @@
 from celery.result import AsyncResult
+from celery import shared_task
+
+from .task_utils import TaskExecutor
 
 class AsyncTaskExecutor:
     def submit_task(self, func, *args, **kwargs):
@@ -18,12 +21,48 @@ class AsyncTaskExecutor:
         :return: The result of the task execution.
         """
         raise NotImplementedError
+    
 
+class CeleryTaskExecutor(TaskExecutor, AsyncTaskExecutor):
 
+    def submit_task(self, **kwargs):
+        """
+        Executes the given task function, either with all provided keyword arguments or only those it accepts.
 
-class CeleryTaskExecutor(AsyncTaskExecutor):
-    def submit_task(self, func, *args, **kwargs):
-        return func.delay(*args, **kwargs)
+        Args:
+            accepts_kwargs: A boolean indicating whether the function accepts arbitrary keyword arguments.
+            func: The task function to be executed.
+            **kwargs: Keyword arguments to be passed to the task function.
+
+        Returns:
+            The output of the task function.
+        """
+
+        self.task_run.status = 'in_progress'
+        accepts_kwargs = self.function_accepts_kwargs(self.function)
+
+        if accepts_kwargs:
+            self.task_future = self.function.delay(**kwargs)
+        
+        else:
+            filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)
+            self.task_future = self.function.delay(**filtered_kwargs)
+
+        return
+    
+    def task_is_ready_for_close(self, **kwargs):
+    
+        if self.task_future.ready():
+            return True
+        
+        return False
+
+    def collect_and_store_output(self):
+
+        self.task_output = self.task_future.get()
+        self.executed_task_output()
+
+        return
 
     def wait_for_results(self, task):
         assert isinstance(task, AsyncResult)

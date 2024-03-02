@@ -1,4 +1,4 @@
-from django_flow_forge.tasks_db import register_task_pipeline
+from django_flow_forge.tasks_db import register_task_flow
 
 from datetime import datetime
 
@@ -52,7 +52,7 @@ def register_pipelines():
                     'post_process_function': {'function': post_process_function,'depends_on': ['analyze_data']}
             }
 
-    register_task_pipeline(flow_name='pipeline_with_nested_tasks', pipeline=ds_pipeline, clear_existing_flow_in_db=True)
+    register_task_flow(flow_name='pipeline_with_nested_tasks', pipeline=ds_pipeline, clear_existing_flow_in_db=True)
 
     return
 

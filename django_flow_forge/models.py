@@ -36,6 +36,7 @@ STATUS_CHOICES = (
     ('complete', 'Complete'),
     ('pending', 'Pending'),
     ('failed', 'Failed'),
+    ('in_progress', 'In Progress'),
     )
     
 class ExecutedFlow(models.Model):

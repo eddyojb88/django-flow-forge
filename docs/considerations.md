@@ -44,3 +44,15 @@ It is recommended to consider Celery Beat with Django for this. There is lots of
 ## Authentication and Authorization
 
 Custom authentication and authorization decorators are coming very soon.
+
+## Parallelisation
+This is always a tricky topic and so care is required in designing from the outset.
+
+This module was developed so that it can be flexible. Each Task in a Flow can be executed in parralel with others, so long as its dependencies have been met. 
+
+To run a Task in Celery, this requires setting e.g. a @shared_task decorator to the specific functions that you want run in async and setting use_celery=True in the flow args (see example_project).
+
+You can also run jobs in parallel within a Task (see pipeline_simple_celery example in example_project)
+
+### Parallelisation within Parallelisation
+What is very tricky is running distributed tasks within distributed tasks. It can be done but not advised. If you really want to go down this route, you can use the ```allow_join_result``` option in Celery to achieve this.

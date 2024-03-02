@@ -1,4 +1,4 @@
-from django_flow_forge.tasks_db import register_task_pipeline
+from django_flow_forge.tasks_db import register_task_flow
 from django_flow_forge.models import ExecutedFlow, MLResult
 
 from datetime import datetime
@@ -118,12 +118,12 @@ def grid_search_multiple_models(**kwargs):
 
 def register_pipelines():
 
-    register_task_pipeline(
+    register_task_flow(
         flow_name='pipeline_ml_with_grid_search', 
         clear_existing_flow_in_db=True,
         pipeline = {
                     'fetch_data2': {'function': fetch_data2, 'depends_on': []},
-                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data1', 'fetch_data2']},
+                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data2']},
                     'analyze_data': {'function': analyze_data, 'depends_on': ['clean_data']},
                     'grid_search_multiple_models': {'function': grid_search_multiple_models, 'depends_on': ['analyze_data']},
                    }

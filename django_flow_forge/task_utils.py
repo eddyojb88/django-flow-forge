@@ -1,26 +1,132 @@
 import inspect
+import logging
+from django.conf import settings
+from django.utils import timezone
 
-def function_accepts_kwargs(func):
-    """
-    Check if the function accepts **kwargs.
-    """
-    sig = inspect.signature(func)
-    return any(param.kind == param.VAR_KEYWORD for param in sig.parameters.values())
+from .models import ExecutedTask, FlowTask
 
-def filter_kwargs_for_function(func, kwargs):
-    """
-    Filter kwargs to only include keys that match the function's parameters.
-    If the function accepts **kwargs, return the original kwargs.
-    """
-    if function_accepts_kwargs(func):
-        return kwargs  # Return original kwargs if **kwargs is accepted
+class TaskExecutor:
 
-    sig = inspect.signature(func)
-    func_params = sig.parameters
-    filtered_kwargs = {key: value for key, value in kwargs.items() if key in func_params}
+    def __init__(self, task_name, **task_dict):
+        
+        for key, value in task_dict.items():
+            setattr(self, key, value)
+        
+        self.task_name = task_name
+        self.task_output_ready = False
+        self.task_future = None
+    
+    def create_checkpoint(self,):
 
-    return filtered_kwargs
+        # If the task is async, you might want to handle the result differently                
+        self.flow_run.last_checkpoint_datetime = timezone.now()
+        self.flow_run.save()
 
+    def submit_task(self, **kwargs):
+
+        """
+        Executes a specific task as part of a flow run, handling logging, execution, and status updates.
+
+        """
+        
+        self.task_run.status = 'in_progress'
+        accepts_kwargs = self.function_accepts_kwargs(self.function)
+        
+        try:
+            if accepts_kwargs:
+                self.task_output = self.function(**kwargs)
+            
+            else:
+                filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)
+                self.task_output = self.function(**filtered_kwargs)
+
+        except Exception as e:
+            self.failed_task_output(e, **kwargs)
+            
+        return
+
+    def task_is_ready_for_close(self, **kwargs):
+        return True
+
+    def task_post_process(self):
+        
+        if getattr(settings, 'MLOPS_DEBUG', True):
+            post_flow_graph_to_add_status(self.flow_run) # inefficient but potentially useful for debugging
+
+        return
+    
+    def setup_flow_task(self, flow, flow_run, **kwargs):
+
+        flow_task_obj = FlowTask.objects.get(task_name=self.task_name, flow=flow)
+        
+        # Check if the task has already been executed
+        if ExecutedTask.objects.filter(flow_run=flow_run, task=flow_task_obj).exists():
+            logging.info(f"Task {self.task_name} already executed.")
+            return  # Task already executed
+
+        logging.info(f"Executing task: {self.task_name}...")
+
+        self.task_snapshot = make_task_snapshot(flow_task_obj,)
+
+        task_run = ExecutedTask.objects.create(
+            flow_run=flow_run,
+            task=flow_task_obj,
+            task_snapshot_id=flow_task_obj.id,
+            task_snapshot=self.task_snapshot,
+            start_time=timezone.now(),
+        )
+        
+        self.task_run = task_run
+
+        return
+
+    def executed_task_output(self,):
+
+        logging.info(f"Task {self.task_name} executed successfully.")
+        self.task_run.output=self.task_output
+        self.task_run.task_complete = True
+        self.task_run.end_time = timezone.now()
+        self.task_run.status = 'complete'
+        self.task_run.save()
+        return True
+
+    def collect_and_store_output(self):
+
+        '''Collection is only necessary for async tasks that override this method'''
+
+        self.executed_task_output()
+
+        return
+
+    def failed_task_output(self, e, **kwargs):
+        logging.info(f"Failed Task: {self.task_name}.")
+        self.task_run.status = 'failed'
+        self.task_run.end_time = timezone.now()
+        self.task_run.exceptions['main_run'] = str(e)
+        self.task_run.save()
+        return False
+    
+    def function_accepts_kwargs(self, func):
+        """
+        Check if the function accepts **kwargs.
+        """
+        sig = inspect.signature(func)
+        return any(param.kind == param.VAR_KEYWORD for param in sig.parameters.values())
+
+    def filter_kwargs_for_function(self, func, kwargs):
+        """
+        Filter kwargs to only include keys that match the function's parameters.
+        If the function accepts **kwargs, return the original kwargs.
+        """
+        if self.function_accepts_kwargs(func):
+            return kwargs  # Return original kwargs if **kwargs is accepted
+
+        sig = inspect.signature(func)
+        func_params = sig.parameters
+        filtered_kwargs = {key: value for key, value in kwargs.items() if key in func_params}
+
+        return filtered_kwargs
+    
 def get_cytoscape_nodes_and_edges(tasks, show_nested=False):
     
     nodes = []
@@ -71,3 +177,89 @@ def get_cytoscape_nodes_and_edges(tasks, show_nested=False):
     }
 
     return graph_json
+
+def make_task_snapshot(flow_task_obj,):
+
+    """
+    Creates a snapshot of the given task's details.
+
+    Args:
+        flow_task_obj: An instance of FlowTask representing the task for which a snapshot is being created.
+
+    Returns:
+        A dictionary containing the snapshot of the task, including its ID, name, dependencies, bidirectional dependencies, and nested status.
+    """
+
+    task_snapshot = {
+        'task_id': flow_task_obj.id,
+        'task_name': flow_task_obj.task_name,
+        # Assuming 'task' has the necessary information; adjust as necessary
+        'depends_on': [dependency.task_name for dependency in flow_task_obj.depends_on.all()],
+        'depends_bidirectionally_with': [dependency.task_name for dependency in flow_task_obj.depends_bidirectionally_with.all()],
+        'nested': flow_task_obj.nested
+    }
+
+    return task_snapshot
+
+def make_flow_snapshot(tasks_lookup, task_order):
+
+    '''
+    Creates a snapshot of the flow tasks based on the provided task order and lookup details.
+    Each ExecutedFlow needs to store a snapshot of the tasks
+    Each ExecutedTask might have an output which we need to explore data from from a click of the node on the graph viz
+    Therefore, store the task run ids with the nodes too, otherwise, if the original task changes later on then there is no valid ref
+
+    Parameters:
+    - tasks_lookup (dict): A dictionary where keys are task names and values are dictionaries containing task details.
+    - task_order (list): A list of task names representing the order in which tasks should be executed.
+
+    Returns:
+    - dict: A dictionary representing the snapshot of the flow, including tasks and their execution order.
+ 
+    '''
+
+    # Initialize the flow snapshot with task details
+    flow_snapshot = {
+        'tasks': [],
+        'order': task_order
+    }
+
+    for task_name in task_order:
+        task_details = tasks_lookup.get(task_name)
+        if task_details:
+            # Assume task_details includes necessary information; adjust as needed
+            task_snapshot = {
+                'name': task_name,
+                'depends_on': task_details.get('depends_on', []),
+            }
+            flow_snapshot['tasks'].append(task_snapshot)
+    
+    return flow_snapshot
+
+def post_flow_graph_to_add_status(flow_run):
+    '''
+    An inefficient add on in order to color nodes based on task status
+    Updates the flow run snapshot with the execution status of each task for visualization purposes.
+
+    Parameters:
+    - flow_run (ExecutedFlow): The flow run instance to update.
+
+    Returns:
+    - ExecutedFlow: The updated flow run instance with task status information.
+    '''
+
+    # create index map:
+    index_map = {}
+    snapshot = flow_run.flow_snapshot
+    nodes = snapshot['graph']['nodes']
+    etasks = ExecutedTask.objects.filter(flow_run=flow_run,)
+    for count, i in enumerate(nodes):
+        index_map[i['data']['id']] = count
+        etask = etasks.filter(task_snapshot_id=i['data']['id'])
+        if len(etask) > 0:
+            i['data']['status'] = etask[0].status
+    snapshot['graph']['nodes'] = nodes
+    flow_run.flow_snapshot = snapshot
+    flow_run.save()
+
+    return

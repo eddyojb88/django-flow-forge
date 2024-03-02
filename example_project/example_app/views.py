@@ -3,35 +3,39 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse
 
-from django_flow_forge.tasks_db import run_flow_pipeline
+from django_flow_forge.tasks_db import run_flow
 from django_flow_forge import models as mlops_models
 
  # This is important in order to load up your tasks and allow django_ml_ops to register each task
-from . import pipeline_simple, pipeline_with_nested_tasks, pipeline_simple_ml, pipeline_ml_grid_search
-from . import  pipeline_simple_with_celery
+from . import flow___parallel_celery, flow___simple_ml, flow___with_nested_tasks, flow__ml_grid_search, flow__simple
+from . import  flow__simple_with_celery
 
 def index(request):
     return render(request, 'example_app/index.html')
 
 def trigger_pipeline_simple(request):
-    run_flow_pipeline('pipeline_simple')
+    run_flow('pipeline_simple')
     return HttpResponse("'Pipeline Simple' Executed", status=200)
 
 def trigger_pipeline_with_nested_tasks(request):
-    run_flow_pipeline('pipeline_with_nested_tasks')
+    run_flow('pipeline_with_nested_tasks')
     return HttpResponse("'pipeline_with_nested_tasks' executed", status=200)
 
 def trigger_pipeline_simple_ml(request):
-    run_flow_pipeline('pipeline_simple_ml')
+    run_flow('pipeline_simple_ml')
     return HttpResponse("'pipeline_simple_ml' executed", status=200)
 
 def trigger_pipeline_ml_grid_search(request):
-    run_flow_pipeline('pipeline_ml_with_grid_search')
+    run_flow('pipeline_ml_with_grid_search')
     return HttpResponse("'pipeline_ml_with_grid_search' executed", status=200)
 
 def trigger_pipeline_simple_with_celery(request):
-    run_flow_pipeline('trigger_pipeline_simple_with_celery')
+    run_flow('trigger_pipeline_simple_with_celery')
     return HttpResponse("'trigger_pipeline_simple_with_celery' executed", status=200)
+
+def trigger_pipeline_parallel_with_celery(request):
+    run_flow('pipeline_in_parallel_with_celery')
+    return HttpResponse("'pipeline_in_parallel_with_celery' executed", status=200)
 
 def fetch_custom_ml_viz_data(request):
 

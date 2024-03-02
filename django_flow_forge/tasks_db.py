@@ -1,15 +1,16 @@
 from functools import wraps
 import logging
-from django.db import transaction, IntegrityError
-import json
+from django.db import transaction
 from django.utils import timezone
 from .models import FlowTask, Flow, ExecutedFlow, ExecutedTask
-from .task_utils import get_cytoscape_nodes_and_edges, function_accepts_kwargs, filter_kwargs_for_function
+from .task_utils import get_cytoscape_nodes_and_edges
 from django.conf import settings
 from django.utils import timezone
+import time
 
 from django.db import transaction
 from .models import Flow, FlowTask
+from .task_utils import post_flow_graph_to_add_status, make_task_snapshot, make_flow_snapshot
 
 flow_pipeline_lookup = {}
 
@@ -45,7 +46,7 @@ def register_task(flow, task_name, task_info, nested):
 
     return task
 
-def register_task_pipeline(flow_name, pipeline, clear_existing_flow_in_db=False):
+def register_task_flow(flow_name, pipeline, clear_existing_flow_in_db=False, **kwargs):
     """
     Registers a pipeline of tasks for a specific flow, handling nested tasks and dependencies.
 
@@ -148,18 +149,6 @@ def set_dependencies(task, depends_on, depends_bidirectionally_with, flow):
     
     return
 
-def fetch_flow_pipeline(flow_name):
-    """
-    Retrieves the flow pipeline for a given flow name.
-    
-    Parameters:
-    - flow_name (str): The name of the flow for which the pipeline configuration is to be retrieved.
-    
-    Returns:
-    - The pipeline configuration if found, otherwise None.
-    """
-    return flow_pipeline_lookup.get(flow_name)
-
 def resolve_dependencies_get_task_order(flow_name):
     """
     Resolves task dependencies and determines the execution order for tasks within a given flow.
@@ -205,49 +194,18 @@ def resolve_dependencies_get_task_order(flow_name):
     task_order = [FlowTask.objects.get(id=task_id).task_name for task_id in resolved_tasks]
     return all_task_objs, task_order
 
-def make_flow_snapshot(tasks_lookup, task_order):
-
-    '''
-    Creates a snapshot of the flow tasks based on the provided task order and lookup details.
-    Each ExecutedFlow needs to store a snapshot of the tasks
-    Each ExecutedTask might have an output which we need to explore data from from a click of the node on the graph viz
-    Therefore, store the task run ids with the nodes too, otherwise, if the original task changes later on then there is no valid ref
-
-    Parameters:
-    - tasks_lookup (dict): A dictionary where keys are task names and values are dictionaries containing task details.
-    - task_order (list): A list of task names representing the order in which tasks should be executed.
-
-    Returns:
-    - dict: A dictionary representing the snapshot of the flow, including tasks and their execution order.
- 
-    '''
-
-    # Initialize the flow snapshot with task details
-    flow_snapshot = {
-        'tasks': [],
-        'order': task_order
-    }
-
-    for task_name in task_order:
-        task_details = tasks_lookup.get(task_name)
-        if task_details:
-            # Assume task_details includes necessary information; adjust as needed
-            task_snapshot = {
-                'name': task_name,
-                'depends_on': task_details.get('depends_on', []),
-            }
-            flow_snapshot['tasks'].append(task_snapshot)
-    
-    return flow_snapshot
-
-def run_flow_pipeline(flow_name, **kwargs):
+def run_flow(flow_name, **kwargs):
     '''
     Initiates and executes a flow pipeline by name, handling task execution and flow status updates.
 
     Parameters:
-    - flow_name (str): The name of the flow to be executed.
+    - flow_name (str): The name of the xflow to be executed.
     - **kwargs: Additional keyword arguments that may be required for task execution.
 
+    Notes:
+    - Decided against using a TaskRun Object to store all details and methods of a Ttask Executor object so as to provide flexibility
+     if the task needs to be passed to something that has no awareness of Django.
+]]]
     Returns:
     - None
     '''
@@ -263,7 +221,7 @@ def run_flow_pipeline(flow_name, **kwargs):
         logging.error(f"Failed to initiate flow run for {flow_name}: {e}")
         raise Exception('You may not have imported the pipeline in to the program, have spelt the flow wrong or are referring to a pipeline that no longer exists.')
 
-    flow_pipeline = fetch_flow_pipeline(flow_name)
+    flow_pipeline = flow_pipeline_lookup.get(flow_name)
     flow_snapshot = make_flow_snapshot(flow_pipeline, task_order)
     flow_snapshot['graph'] = get_cytoscape_nodes_and_edges(all_task_objs, show_nested=True)
     flow_snapshot['flow_name'] = flow_name
@@ -271,173 +229,103 @@ def run_flow_pipeline(flow_name, **kwargs):
     flow_run.save()
     kwargs['executed_flow_id'] = flow_run.id
 
-    logging.info(f"Starting task execution for flow '{flow_name}'.")
 
-    for task_name in task_order:
-        # Execute each task according to the resolved order and pipeline definitions
-        # If its in the flow_pipeline then its not a nested task:
-        if task_name in flow_pipeline:
-            task_dict = flow_pipeline[task_name]
+    executors = {}
 
-        executed = execute_task(task_dict, task_name, flow, flow_run, **kwargs)
-        flow_run.last_checkpoint_datetime = timezone.now()
-        flow_run.save()
+    # assign an executor instance for each task:
+    for task_name, task_dict in flow_pipeline.items():
+        executor = get_executor(task_dict, task_name, **kwargs)
+        executor.flow = flow
+        executor.flow_run = flow_run
+        executor.setup_flow_task(flow, flow_run,)
+        executors[task_name] = executor
+    
+    counter = 0
 
-        if not executed:
-            flow_run.status = 'failed'
-            flow_run = post_flow_graph_to_add_status(flow_run)
-            flow_run.save()
-            return
+    while any(executor.task_run.status != 'complete' for executor in executors.values()):
+
+        for task_name in executors:
+
+            executor = executors[task_name]
+            try:
+                ''' If all dependencies are met, execute the task '''
+                if (executor.task_run.status == 'pending') and all(executors[dep].task_run.status == 'complete' for dep in executor.depends_on):
+
+                    executor.submit_task(**kwargs)
+
+                    executor.create_checkpoint()
+
+                    if executor.task_is_ready_for_close():
+                        # collect output
+                        executor.collect_and_store_output()
+
+                        executor.task_post_process()
+                
+                elif executor.task_run.status == 'in_progress':
+                    
+                    # Else if task is in progress then check status and collect data #
+                    if counter % 1000:
+                        executor.create_checkpoint()
+            
+                    if executor.task_is_ready_for_close():
+                        # collect output
+                        executor.collect_and_store_output()
+
+                        executor.task_post_process()
+
+                elif executor.task_run.status == 'failed':
+                    flow_run.status = 'failed'
+                    post_flow_graph_to_add_status(flow_run)
+                    flow_run.save()
+                    break
+            except KeyError as ke:
+                closing_flow_process(flow_run, flow_complete=False, status='failed')
+                raise (f'You may have a dependency issue in your flow for task {task_name}')
+                
+
+        # Optional: Implement a more sophisticated mechanism to avoid tight looping
+        time.sleep(1)
+        counter += 1
+
+    if all(executor.task_run.status == 'complete' for executor in executors.values()):
+        closing_flow_process(flow_run, flow_complete=True, status='complete')
+        logging.info(f"Flow {flow_name} completed successfully.")
+
+    else:
+        closing_flow_process(flow_run, flow_complete=False,)
+        logging.error(f"Flow {flow_name} failed due to task error.")
 
     # Update the flow run status to 'complete' after successful execution of all tasks
-    flow_run.end_time = timezone.now()
-    flow_run.flow_complete = True
-    flow_run.status = 'complete'
-    flow_run = post_flow_graph_to_add_status(flow_run)
+    
+    post_flow_graph_to_add_status(flow_run)
     flow_run.save()
 
     logging.info(f"All tasks for flow {flow_name} completed successfully.")
 
     return
 
-def post_flow_graph_to_add_status(flow_run):
-    '''
-    An inefficient add on in order to color nodes based on task status
-    Updates the flow run snapshot with the execution status of each task for visualization purposes.
+def closing_flow_process(flow_run, flow_complete:bool, status=None,):
 
-    Parameters:
-    - flow_run (ExecutedFlow): The flow run instance to update.
-
-    Returns:
-    - ExecutedFlow: The updated flow run instance with task status information.
-    '''
-
-    # create index map:
-    index_map = {}
-    snapshot = flow_run.flow_snapshot
-    nodes = snapshot['graph']['nodes']
-    etasks = ExecutedTask.objects.filter(flow_run=flow_run,)
-    for count, i in enumerate(nodes):
-        index_map[i['data']['id']] = count
-        etask = etasks.filter(task_snapshot_id=i['data']['id'])
-        if len(etask) > 0:
-            i['data']['status'] = etask[0].status
-    snapshot['graph']['nodes'] = nodes
-    flow_run.flow_snapshot = snapshot
+    flow_run.flow_complete = flow_complete
+    flow_run.end_time = timezone.now()
+    if status:
+        flow_run.status = status
     flow_run.save()
 
-    return flow_run
+    return
 
-def make_task_snapshot(flow_task_obj,):
+def is_celery_task(func):
+    return hasattr(func, 'delay') and hasattr(func, 'apply_async')
 
-    """
-    Creates a snapshot of the given task's details.
+def get_executor(task_dict, task_name, **kwargs):
 
-    Args:
-        flow_task_obj: An instance of FlowTask representing the task for which a snapshot is being created.
-
-    Returns:
-        A dictionary containing the snapshot of the task, including its ID, name, dependencies, bidirectional dependencies, and nested status.
-    """
-
-    task_snapshot = {
-        'task_id': flow_task_obj.id,
-        'task_name': flow_task_obj.task_name,
-        # Assuming 'task' has the necessary information; adjust as necessary
-        'depends_on': [dependency.task_name for dependency in flow_task_obj.depends_on.all()],
-        'depends_bidirectionally_with': [dependency.task_name for dependency in flow_task_obj.depends_bidirectionally_with.all()],
-        'nested': flow_task_obj.nested
-    }
-
-    return task_snapshot
-
-def execute_task(task_dict, task_name, flow, flow_run, **kwargs):
-
-    """
-    Executes a specific task as part of a flow run, handling logging, execution, and status updates.
-
-    Args:
-        task_dict: A dictionary containing task-specific data, including the function to execute.
-        task_name: The name of the task to be executed.
-        flow: The flow instance to which the task belongs.
-        flow_run: The current execution instance of the flow.
-        **kwargs: Additional keyword arguments to be passed to the task function.
-
-    Returns:
-        True if the task was executed successfully, False otherwise.
-    """
-
-    flow_task_obj = FlowTask.objects.get(task_name=task_name, flow=flow)
-    
-    # Check if the task has already been executed
-    if ExecutedTask.objects.filter(flow_run=flow_run, task=flow_task_obj).exists():
-        logging.info(f"Task {task_name} already executed.")
-        return  # Task already executed
-
-    logging.info(f"Executing task: {task_name}...")
-
-    task_snapshot = make_task_snapshot(flow_task_obj,)
-
-    task_run = ExecutedTask.objects.create(
-        flow_run=flow_run,
-        task=flow_task_obj,
-        task_snapshot_id=flow_task_obj.id,
-        task_snapshot=task_snapshot,
-        start_time=timezone.now(),
-    )
-    
-    # Execute the task but check whether it accepts **kwargs or not
-    # If not, then filter the kwargs according to the accepted input arguments and pass on through
-    func = task_dict['function']
-    
-    accepts_kwargs = function_accepts_kwargs(func)
-    
-    if getattr(settings, 'MLOPS_DEBUG', False):
-
-        task_output = run_task(accepts_kwargs, func, **kwargs)
-        flow_run = post_flow_graph_to_add_status(flow_run) # inefficient but potentially useful for debugging
-
+    use_celery = kwargs.get('use_celery', False)
+    if use_celery and is_celery_task(task_dict['function']):
+        logging.info(f"Choosing Celery to execute task '{task_name}'.")
+        from .async_utils import CeleryTaskExecutor
+        executor = CeleryTaskExecutor(task_name, **task_dict)
     else:
-
-        try:
-            task_output = run_task(accepts_kwargs, func, **kwargs)
-
-        except Exception as e:
-            logging.info(f"Failed Task: {task_name}.")
-            task_run.status = 'failed'
-            task_run.end_time = timezone.now()
-            task_run.exceptions['main_run'] = str(e)
-            task_run.save()
-            return False
-
-    task_run.output=task_output
-    task_run.task_complete = True
-    task_run.end_time = timezone.now()
-    task_run.status = 'complete'
-    task_run.save()
-
-    logging.info(f"Task {task_name} executed successfully.")
-
-    return True
-
-def run_task(accepts_kwargs, func, **kwargs):
-    """
-    Executes the given task function, either with all provided keyword arguments or only those it accepts.
-
-    Args:
-        accepts_kwargs: A boolean indicating whether the function accepts arbitrary keyword arguments.
-        func: The task function to be executed.
-        **kwargs: Keyword arguments to be passed to the task function.
-
-    Returns:
-        The output of the task function.
-    """
-
-    if accepts_kwargs:
-        task_output = func(**kwargs)
-    
-    else:
-        filtered_kwargs = filter_kwargs_for_function(func, kwargs)
-        task_output = func(**filtered_kwargs)
-
-    return task_output
+        from .task_utils import TaskExecutor
+        logging.info(f"Starting task execution in linear order for flow")
+        executor = TaskExecutor(task_name, **task_dict)
+    return executor

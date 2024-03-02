@@ -1,42 +1,43 @@
-from django_flow_forge.tasks_db import register_task_pipeline
+from django_flow_forge.tasks_db import register_task_flow
 
 from datetime import datetime
-
 from celery import shared_task
 
-@shared_task
-def my_background_task(arg1, arg2):
+
+def add_task(arg1, arg2):
     # Task implementation
     return arg1 + arg2
 
-# Fetch data function
+@shared_task
 def fetch_data1():    
-    result1 = my_background_task.delay(10, 100)
-    result2 = my_background_task.delay(100, 1000)
-    return (result1.get(), result2.get())
+    result = add_task(1,2)
+    return result
 
-def fetch_data2():    
-    result3 = my_background_task.delay(100, 10220)
-    return (result3.get(),)
+@shared_task
+def fetch_data2():   
+    result = add_task(3,4)    
+    return result
 
+@shared_task
 def clean_data():
     return True
 
-# Analyzing data function
+@shared_task
 def analyze_data():
     # Simple analysis - just summarizing the data
     analysis = 'Some Summary Analysis'
     return {'forecast_date': str(datetime.now()), 'analysis': analysis}
 
-# Training model function
+@shared_task
 def post_process():
     return 'Good Result!'
 
 def register_pipelines():
 
-    register_task_pipeline(
-        flow_name='trigger_pipeline_simple_with_celery',
+    register_task_flow(
+        flow_name='pipeline_in_parallel_with_celery',
         clear_existing_flow_in_db=True,
+        use_celery=True,
         pipeline = {
                     'fetch_data1': {'function': fetch_data1, 'depends_on': []},
                     'fetch_data2': {'function': fetch_data2, 'depends_on': []},

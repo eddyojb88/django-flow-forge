@@ -1,4 +1,4 @@
-from django_flow_forge.tasks_db import register_task_pipeline
+from django_flow_forge.tasks_db import register_task_flow
 
 from datetime import datetime
 
@@ -33,7 +33,7 @@ def some_post_process_function():
 
 def register_pipelines():
 
-    register_task_pipeline(
+    register_task_flow(
         flow_name='pipeline_simple',
         clear_existing_flow_in_db=True,
         pipeline = {
