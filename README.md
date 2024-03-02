@@ -26,13 +26,6 @@ This is a module built for Data Scientists and Data Engineers, here to help you 
 
 <img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django-flow-forge/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">
 
-
- ## Features to come
- - Documentation page
- - Implement better authentication and authorization options (at the moment you have to import the views in to urls and add login_required
- - Async capability: allow user to use the dependency tree in the graph in order to wait for relevant tasks that have been offloaded to complete
- - Make stakeholder only facing dashboard to display only tasks that succeeded
-
 # Quick Start
 
 
