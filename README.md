@@ -28,5 +28,4 @@ This is a module built for Data Scientists and Data Engineers, here to help you 
 
 # Quick Start
 
-
 [See this page in the Docs](https://eddyojb88.github.io/django-flow-forge/installation/).
