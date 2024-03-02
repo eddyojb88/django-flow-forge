@@ -2,6 +2,9 @@
 
 ## Features
 
+
+<img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django-flow-forge/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">
+
 - Task monitoring (there is auto-checkpoints between Tasks)
 - Visualize a Flow in terms of its Tasks, dependecy tree and Task status. Clicking on nodes allows you to inspect the status and output
 

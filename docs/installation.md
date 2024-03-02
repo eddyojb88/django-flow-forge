@@ -72,5 +72,11 @@ Warning: if you have celery worker running, at the moment the celery example wil
 
 ```http://localhost:8005/django_flow_forge/task-runs-viz/```
 
-More details on this can be found in Dashboard section
+If wanting to conceptualize a task for stakeholders before or during development, you can view the pipeline in concept by going to:
 
+```
+http://localhost:8005/django-flow-forge/conceptual-dag-viz/
+
+<img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django-flow-forge/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">
+
+More details on this can be found in Dashboard section

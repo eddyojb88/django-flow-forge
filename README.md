@@ -30,48 +30,8 @@ This is a module built for Data Scientists and Data Engineers, here to help you 
 
 # Quick Start
 
-Docs are here: [Read the Docs](https://eddyojb88.github.io/django-flow-forge/).
 
-```
-docker compose -f docker-compose-local.yml up
-```
+[See this page in the Docs](https://eddyojb88.github.io/django-flow-forge/installation/).
 
-This runs both a Django container and a RabbitMQ container for the async task example with celery.
-
-Next, connect in to the Django docker container.
-
-There are a series of examples to showcase functionality, mostly without async. If you are not yet interested in async, you can skip the next part but if you are then within the ```example_project``` directory, run:
-
-```
-celery -A example_app  worker --loglevel=info
-```
-
-This starts the celery instance for the example async task.
-
-Next, run the django server with:
-
-```
-python manage.py runserver  0.0.0.0:8000
-```
-
-With the development server now running, you can view the list of trigger examples at:
-
-```
-http://localhost:8005/example/
-```
-
-In order to understand how this is being run, you can view the associated scripts in the ```example_app``` directory,
-with ```pipeline_simple.py``` being the simplest example to view how a pipeline is registered. To view how the pipeline is called, go to ```views.py``` and the ```trigger_pipeline_simple``` function.
-
-Once the task is complete, you can view the pipeline summary and associated info at the following page:
-
-```
-http://localhost:8005/django-flow-forge/task-runs-viz/
-```
-
-If wanting to conceptualize a task for stakeholders before or during development, you can view the pipeline in concept by going to:
-
-```
-http://localhost:8005/django-flow-forge/conceptual-dag-viz/
 
 <img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django-flow-forge/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">
