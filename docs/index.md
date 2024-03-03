@@ -10,7 +10,7 @@ The intelligent design here is that you learn how to use Django, rather than a p
 
 ![mlops_gif](https://github.com/eddyojb88/django-flow-forge/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
 
-# Features
+## Features
 
 - Easily define your data or ML flows (aka pipeline) as a DAG
 - Visualize your flows for stakeholders, both in planning and development phases (inspired by Kedro)
@@ -25,7 +25,7 @@ The intelligent design here is that you learn how to use Django, rather than a p
 - Encourages standardisation of data science work flows
 - Encourages teams to move away from Notebooks, which cause a plethora of issues
 
-# Motivation
+## Motivation
 
 It is necessary in data science projects to:
 
@@ -42,7 +42,7 @@ An ML system should also be simple enough that colleagues can:
 
 In most cases, you dont need any of the highly specialised ML Ops tools out there. Analysis reveals that in many cases, issues in, for example, machine learning operations can be attributed to bad code design and the use of notebooks.
 
-## Inspiration
+### Inspiration
 
 This package is inspired by the following articles that challenge the prevailing ML Ops narrative, drawing inspiration from critical discussions on the necessity and implementation of MLOps. This module seeks to avoid the pitfalls of overcomplication and excessive relaiance on overly specialized tools:
 
@@ -51,7 +51,7 @@ This package is inspired by the following articles that challenge the prevailing
 - [I dont like Notebooks/Collab](https://www.youtube.com/watch?v=7jiPeIFXb6U)
 
 
-## The State of the ML Ops ecosystem
+### The State of the ML Ops ecosystem
 The current MLOps landscape is cluttered with overengineered solutions. Analysis reveals a stark contrast in codebase size and functionality, with Django Flow Forge offering a lean yet powerful alternative to help solve end to end solutions (<4k of code vs Kedro with 430k lines of code!). Yet all other [tools analysed](https://medium.com/@eddyojb/thoughts-you-wont-get-from-chatgpt-do-you-need-ml-ops-2c954b9d47a6) have significant deficiencies. The features of Django Flow Forge are designed to meet a vision for a more accessible and flexible ML operational environment.
 
 ## Why not use e.g. Apache Beam?

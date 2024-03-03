@@ -15,6 +15,7 @@
             ],
             "django": true
         },
+
         {
             "name": "Python: Current File",
             "type": "python",
@@ -22,6 +23,20 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+
+        {
+            "name": "MkDocs Serve",
+            "type": "python",
+            "request": "launch",
+            "module": "mkdocs",
+            "args": [
+                "serve",
+                "-a",
+                "0.0.0.0:8000"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
         },
         {
             "name": "Django: Test",

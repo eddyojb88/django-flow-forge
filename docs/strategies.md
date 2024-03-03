@@ -1,4 +1,4 @@
-# System Design - Developement Strategies
+# System Design Strategies
 
 Given that there are infinite variations, this page documents some example strategies when using this module in case you are wondering whether it is an appropriate choice for your project.
 

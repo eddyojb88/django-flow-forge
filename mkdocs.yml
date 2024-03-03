@@ -4,3 +4,13 @@ docs_dir: 'docs'
 site_dir: 'site'
 theme:
   name: 'material'
+nav:
+  - Home: 'index.md'
+  - 'installation.md'
+  - Features:
+    - 'flows_dashboard.md'
+    - 'data_science_experiments.md'
+  - Considerations:
+    - 'considerations.md'
+    - 'strategies.md'
+    - 'roadmap.md'
