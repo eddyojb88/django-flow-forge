@@ -12,10 +12,8 @@ from django_flow_forge.tasks_db import run_flow
 
 if __name__ == '__main__':
 
-    kwargs = {
-                'use_celery': True
-                }
-    # run_flow('trigger_pipeline_simple_with_celery', **kwargs)
-    # run_flow('trigger_pipeline_in_parallel_with_celery', **kwargs)
-    run_flow('pipeline_in_parallel_with_celery', **kwargs)
+    kwargs = {}
+
+    run_flow('pipeline_ml_with_grid_search', **kwargs)
+    run_flow('pipeline_in_parallel_with_celery',  use_celery=True, **kwargs)
     

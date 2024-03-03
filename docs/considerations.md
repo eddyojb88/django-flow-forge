@@ -2,7 +2,7 @@
 
 ## What are Flows?
 
-Flows in Django Flow Forge are database back sequences of tasks designed to help automate machine learning and data operations workflows. Each Flow consists of multiple Tasks that can be executed in a specified order.
+Flows in Django Flow Forge are database backed sequences of tasks designed to help automate data operations and machine learning operational workflows. Each Flow consists of multiple Tasks that can be executed in a specified order.
 Tasks can contain logic that can be run in e.g. Celery or upscaled in Kuberenetes. 
 Flows are designed to simplify complex data processing, machine learning model training, evaluation, and deployment processes by encapsulating them into manageable, repeatable, and scalable operations.
 

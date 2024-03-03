@@ -80,3 +80,8 @@ http://localhost:8005/django-flow-forge/conceptual-dag-viz/
 <img width="1057" alt="Screenshot 2024-02-27 at 11 45 02" src="https://github.com/eddyojb88/django-flow-forge/assets/22086433/36e80d55-4968-40e1-bf73-9eaef5247a8f">
 
 More details on this can be found in Dashboard section
+
+
+## Running tasks with no web server
+A great feature of this module is that you can develop and run tasks without the web server.
+See the  ``run_tasks_no_server.py``` script to see how this works.
