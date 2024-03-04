@@ -1,6 +1,6 @@
 from celery.result import AsyncResult
 from celery import shared_task
-
+from django.conf import settings
 from .task_utils import TaskExecutor
 
 class AsyncTaskExecutor:
@@ -42,10 +42,14 @@ class CeleryTaskExecutor(TaskExecutor, AsyncTaskExecutor):
         accepts_kwargs = self.function_accepts_kwargs(self.function)
 
         if accepts_kwargs:
-            self.task_future = self.function.delay(**kwargs)
+            filtered_kwargs = kwargs
         
         else:
             filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)
+        
+        if settings.DEBUG:
+            self.debug_mode(**filtered_kwargs)
+        else:
             self.task_future = self.function.delay(**filtered_kwargs)
 
         return

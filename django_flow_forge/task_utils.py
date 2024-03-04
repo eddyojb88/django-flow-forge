@@ -2,6 +2,9 @@ import inspect
 import logging
 from django.conf import settings
 from django.utils import timezone
+import sys
+import traceback
+from django.conf import settings
 
 from .models import ExecutedTask, FlowTask
 
@@ -16,6 +19,10 @@ class TaskExecutor:
         self.task_output_ready = False
         self.task_future = None
     
+    def debug_mode(self, **kwargs):
+        self.task_output = self.function(**kwargs)
+        return
+
     def create_checkpoint(self,):
 
         # If the task is async, you might want to handle the result differently                
@@ -34,14 +41,25 @@ class TaskExecutor:
         
         try:
             if accepts_kwargs:
-                self.task_output = self.function(**kwargs)
-            
+                filtered_kwargs = kwargs
+                
             else:
                 filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)
+            
+            if settings.DEBUG:
+                self.debug_mode(**filtered_kwargs)
+
+            else:
                 self.task_output = self.function(**filtered_kwargs)
 
-        except Exception as e:
-            self.failed_task_output(e, **kwargs)
+        finally:
+            # Log any exception that occurred during task execution
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            if exc_type is not None:
+                traceback_str = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+                logging.error(f"An exception occurred during task execution:\n{traceback_str}")
+                # Pass the exception to failed_task_output
+                self.failed_task_output(traceback_str, **kwargs)
             
         return
 
@@ -64,7 +82,7 @@ class TaskExecutor:
             logging.info(f"Task {self.task_name} already executed.")
             return  # Task already executed
 
-        logging.info(f"Executing task: {self.task_name}...")
+        logging.info(f"Setting up task: {self.task_name}...")
 
         self.task_snapshot = make_task_snapshot(flow_task_obj,)
 

@@ -194,6 +194,17 @@ def resolve_dependencies_get_task_order(flow_name):
     task_order = [FlowTask.objects.get(id=task_id).task_name for task_id in resolved_tasks]
     return all_task_objs, task_order
 
+def task_can_start_check(executor, executors, **kwargs):
+    
+    if kwargs.get('ignore_task_dependencies'):
+        if (executor.task_run.status == 'pending'):
+            return True
+    
+    elif (executor.task_run.status == 'pending') and all(executors[dep].task_run.status == 'complete' for dep in executor.depends_on):
+        return True
+                
+    return False
+
 def run_flow(flow_name, **kwargs):
     '''
     Initiates and executes a flow pipeline by name, handling task execution and flow status updates.
@@ -229,7 +240,6 @@ def run_flow(flow_name, **kwargs):
     flow_run.save()
     kwargs['executed_flow_id'] = flow_run.id
 
-
     executors = {}
 
     # assign an executor instance for each task:
@@ -241,7 +251,7 @@ def run_flow(flow_name, **kwargs):
         executors[task_name] = executor
     
     counter = 0
-
+    
     while any(executor.task_run.status != 'complete' for executor in executors.values()):
 
         for task_name in executors:
@@ -249,7 +259,7 @@ def run_flow(flow_name, **kwargs):
             executor = executors[task_name]
             try:
                 ''' If all dependencies are met, execute the task '''
-                if (executor.task_run.status == 'pending') and all(executors[dep].task_run.status == 'complete' for dep in executor.depends_on):
+                if task_can_start_check(executor, executors, **kwargs):
 
                     executor.submit_task(**kwargs)
 
@@ -280,8 +290,7 @@ def run_flow(flow_name, **kwargs):
                     break
             except KeyError as ke:
                 closing_flow_process(flow_run, flow_complete=False, status='failed')
-                raise (f'You may have a dependency issue in your flow for task {task_name}')
-                
+                raise Exception(f'You may have a dependency issue in your flow for task {task_name}')
 
         # Optional: Implement a more sophisticated mechanism to avoid tight looping
         time.sleep(1)
@@ -326,6 +335,6 @@ def get_executor(task_dict, task_name, **kwargs):
         executor = CeleryTaskExecutor(task_name, **task_dict)
     else:
         from .task_utils import TaskExecutor
-        logging.info(f"Starting task execution in linear order for flow")
+        logging.debug(f"Using an in thread executor for {task_name}.")
         executor = TaskExecutor(task_name, **task_dict)
     return executor

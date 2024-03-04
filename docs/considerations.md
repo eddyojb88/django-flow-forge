@@ -19,9 +19,10 @@ Flows are designed to simplify complex data processing, machine learning model t
                    }
     )
 ```
-
 A flow is defined by registering a series of tasks, where each task is associated with a specific function to execute. Additional metadata describing its dependencies on other tasks is also defined in order to understand the task order. 
 The flow's tasks are stored and managed in the database, enabling dynamic modification and scalable execution and tracking.
+
+WARNING: It is important to set the 'depends_on' properly when parrelising tasks. If you don't set dependencies then the system will think they are all fine to run at the same time.
 
 ## Nested tasks
 
