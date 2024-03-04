@@ -122,6 +122,11 @@ class TaskExecutor:
         self.task_run.status = 'failed'
         self.task_run.end_time = timezone.now()
         self.task_run.exceptions['main_run'] = str(e)
+
+        ''' If task no longer exists, remove it'''
+        if not FlowTask.objects.filter(id=self.task_run.task.id).exists():
+            self.task_run.task = None
+            
         self.task_run.save()
         return False
     
