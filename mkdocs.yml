@@ -12,5 +12,6 @@ nav:
     - 'data_science_experiments.md'
   - Considerations:
     - 'considerations.md'
+    - 'debugging.md'
     - 'strategies.md'
     - 'roadmap.md'
