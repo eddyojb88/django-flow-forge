@@ -9,7 +9,16 @@ When you go to run the flow, you can insert the ```ignore_task_dependencies``` k
 Warning: Be aware that this currently breaks the DAG in the visualisation tools as it doesn't yet handle missing dependencies.
 
 ## Stepping through each Task stepwise and in sequence
-At the moment, in order to debug and run through each Task stepwise, you would need to set breakpoints at each function you care about.
+In order to debug and run through each Task stepwise, you would need to set breakpoints at each function you care about, or you can copy and paste this:
 
-Note:
-What is on the roadmap and coming soon is to set a debug mode that allows you to set a breakpoint at the beginning / entry point of each Task function.
+```
+class DebugExecutor:
+    def debug_mode(self, executor, **kwargs):
+        print(f'Running function {executor.task_name}')
+        executor.task_output = executor.function(**kwargs)
+        return
+```
+
+set a breakpoint at the ```executor.function(**kwargs)``` and then call a flow like this:
+
+```run_flow('your_flow',  debug_executor=DebugExecutor(), **kwargs)```

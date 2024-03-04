@@ -18,10 +18,6 @@ class TaskExecutor:
         self.task_name = task_name
         self.task_output_ready = False
         self.task_future = None
-    
-    def debug_mode(self, **kwargs):
-        self.task_output = self.function(**kwargs)
-        return
 
     def create_checkpoint(self,):
 
@@ -47,7 +43,7 @@ class TaskExecutor:
                 filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)
             
             if settings.DEBUG:
-                self.debug_mode(**filtered_kwargs)
+                self.debug_executor.debug_mode(self, **filtered_kwargs)
 
             else:
                 self.task_output = self.function(**filtered_kwargs)
@@ -105,6 +101,11 @@ class TaskExecutor:
         self.task_run.task_complete = True
         self.task_run.end_time = timezone.now()
         self.task_run.status = 'complete'
+
+        ''' If task no longer exists, remove it'''
+        if not FlowTask.objects.filter(id=self.task_run.task.id).exists():
+            self.task_run.task = None
+
         self.task_run.save()
         return True
 

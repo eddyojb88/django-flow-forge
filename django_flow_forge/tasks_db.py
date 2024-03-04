@@ -46,7 +46,7 @@ def register_task(flow, task_name, task_info, nested):
 
     return task
 
-def register_task_flow(flow_name, pipeline, clear_existing_flow_in_db=False, **kwargs):
+def register_task_flow(flow_name, pipeline, clear_existing_flow_in_db=True, **kwargs):
     """
     Registers a pipeline of tasks for a specific flow, handling nested tasks and dependencies.
 
@@ -55,7 +55,7 @@ def register_task_flow(flow_name, pipeline, clear_existing_flow_in_db=False, **k
     Parameters:
     - flow_name (str): The name of the flow for which the pipeline is being registered.
     - pipeline (list of dict): A list of dictionaries, each representing a task and its details including dependencies and any nested tasks.
-    - clear_existing_flow_in_db (bool, optional): Flag to clear existing tasks and relationships from the database for the given flow before registering the new pipeline. Defaults to False.
+    - clear_existing_flow_in_db (bool, optional): Flag to clear existing tasks and relationships from the database for the given flow before registering the new pipeline. Defaults to True.
 
     Returns:
     - set: A set containing the names of the tasks that were updated or created as part of the pipeline.
@@ -210,7 +210,16 @@ def task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
                 
     return False
 
-def run_flow(flow_name, **kwargs):
+class DebugExecutor:
+    '''
+    An executor for the flow with the primary aim of assisting in debugging a flow, cycling through each
+    Task function in an ordered and stepwise fashion
+    '''
+    def debug_mode(self, executor, **kwargs):
+        executor.task_output = executor.function(**kwargs)
+        return
+
+def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
     '''
     Initiates and executes a flow pipeline by name, handling task execution and flow status updates.
 
@@ -219,11 +228,7 @@ def run_flow(flow_name, **kwargs):
     - **kwargs: Additional keyword arguments that may be required for task execution.
 
     Notes:
-    - Decided against using a TaskRun Object to store all details and methods of a Ttask Executor object so as to provide flexibility
-     if the task needs to be passed to something that has no awareness of Django.
-]]]
-    Returns:
-    - None
+    - It was decided not to use a TaskRun Object to store all details and methods of a Task Executor object - this may or may not have been an optimal decision
     '''
 
     try:
@@ -244,7 +249,7 @@ def run_flow(flow_name, **kwargs):
     flow_run.flow_snapshot = flow_snapshot
     flow_run.save()
     kwargs['executed_flow_id'] = flow_run.id
-
+        
     executors = {}
 
     # assign an executor instance for each task:
@@ -253,7 +258,9 @@ def run_flow(flow_name, **kwargs):
         executor.flow = flow
         executor.flow_run = flow_run
         executor.setup_flow_task(flow, flow_run,)
+        executor.debug_executor = debug_executor
         executors[task_name] = executor
+
     
     counter = 0
     
@@ -297,7 +304,7 @@ def run_flow(flow_name, **kwargs):
             
             finally:
                 pass
-            
+
         # Optional: Implement a more sophisticated mechanism to avoid tight looping
         time.sleep(1)
         counter += 1
