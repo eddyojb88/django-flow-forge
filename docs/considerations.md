@@ -24,6 +24,8 @@ The flow's tasks are stored and managed in the database, enabling dynamic modifi
 
 WARNING: It is important to set the 'depends_on' properly when parrelising tasks. If you don't set dependencies then the system will think they are all fine to run at the same time.
 
+Also, when writing your Tasks, a good habit is to make sure they all have functional independence i.e. don't return large objects, especially not Pandas DataFrames, which aren't JSON serializable so should only be used within the function. Store your files to your system or even better database.
+
 ## Nested tasks
 
 It's crucial to recognize that, as of the current implementation, nested tasks in Django-Flow-Forge are utilized primarily for visualization purposes. This means that while nested tasks significantly aid in depicting the structure and dependencies of a workflow in a more intuitive and detailed manner, they do not alter the execution logic of the pipeline. The primary execution flow treats these nested tasks as part of the linear sequence of tasks, irrespective of their hierarchical representation in the visualization.

@@ -194,14 +194,19 @@ def resolve_dependencies_get_task_order(flow_name):
     task_order = [FlowTask.objects.get(id=task_id).task_name for task_id in resolved_tasks]
     return all_task_objs, task_order
 
-def task_can_start_check(executor, executors, **kwargs):
-    
-    if kwargs.get('ignore_task_dependencies'):
-        if (executor.task_run.status == 'pending'):
+def task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
+
+    try:
+        if kwargs.get('ignore_task_dependencies'):
+            if (executor.task_run.status == 'pending'):
+                return True
+        
+        elif (executor.task_run.status == 'pending') and all(executors[dep].task_run.status == 'complete' for dep in executor.depends_on):
             return True
-    
-    elif (executor.task_run.status == 'pending') and all(executors[dep].task_run.status == 'complete' for dep in executor.depends_on):
-        return True
+        
+    except KeyError as ke:
+        closing_flow_process(flow_run, flow_complete=False, status='failed')
+        raise Exception(f'You may have a dependency issue in your flow for task {task_name}')
                 
     return False
 
@@ -257,9 +262,10 @@ def run_flow(flow_name, **kwargs):
         for task_name in executors:
 
             executor = executors[task_name]
+
             try:
                 ''' If all dependencies are met, execute the task '''
-                if task_can_start_check(executor, executors, **kwargs):
+                if task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
 
                     executor.submit_task(**kwargs)
 
@@ -288,10 +294,10 @@ def run_flow(flow_name, **kwargs):
                     post_flow_graph_to_add_status(flow_run)
                     flow_run.save()
                     break
-            except KeyError as ke:
-                closing_flow_process(flow_run, flow_complete=False, status='failed')
-                raise Exception(f'You may have a dependency issue in your flow for task {task_name}')
-
+            
+            finally:
+                pass
+            
         # Optional: Implement a more sophisticated mechanism to avoid tight looping
         time.sleep(1)
         counter += 1
