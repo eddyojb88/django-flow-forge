@@ -4,9 +4,11 @@
 
 ```pip install django_flow_forge```
 
-However, if new to this module see the next section
+However, if new to this module see the next section for an example app. If not, remember to add
+```django_flow_forge``` to your list of ```INSTALLED_APPS``` in ```settings.py``` and
+```path('django_flow_forge/', include('django_flow_forge.urls')),``` to ```urls.py```.
 
-## Quickstart
+## Quickstart Example Project
 It is recommended to clone the repo in order to view the ```example_project``` in action.
 
 ### Docker
