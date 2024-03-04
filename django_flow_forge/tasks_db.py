@@ -261,7 +261,6 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
         executor.debug_executor = debug_executor
         executors[task_name] = executor
 
-    
     counter = 0
     
     while any(executor.task_run.status != 'complete' for executor in executors.values()):

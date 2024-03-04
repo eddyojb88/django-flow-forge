@@ -52,7 +52,7 @@ class ExecutedFlow(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     last_checkpoint_datetime = models.DateTimeField(blank=True, auto_now_add=True)
     flow_snapshot = models.JSONField(default=dict)  # Captures the output of the task for this run
-    exceptions = models.JSONField(default=dict)
+    exceptions = models.JSONField(default=dict, null=True, blank=True)
 
     def __str__(self):
         if self.flow:
@@ -72,7 +72,7 @@ class ExecutedTask(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
     task_complete = models.BooleanField(default=False)  # Indicates if the task run is complete
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    exceptions = models.JSONField(default=dict)
+    exceptions = models.JSONField(default=dict, null=True, blank=True,)
 
     def __str__(self):
         if not self.task:

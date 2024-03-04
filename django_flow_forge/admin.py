@@ -39,7 +39,7 @@ class ExecutedFlowAdmin(admin.ModelAdmin):
 
 @admin.register(models.ExecutedTask)
 class ExecutedTaskAdmin(admin.ModelAdmin):
-    list_display = ('task', 'task_name_snapshot', 'flow_run', 'start_time', 'end_time', 'task_complete')
+    list_display = ('task_name_snapshot', 'flow_run', 'task', 'start_time', 'end_time', 'task_complete')
     list_filter = ('flow_run', 'task_complete')
     search_fields = ['task__task_name', 'flow_run__flow__flow_name']
     readonly_fields = ('output', 'task_snapshot_id')
@@ -47,5 +47,7 @@ class ExecutedTaskAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         if obj:  # Editing an existing object
             # Making 'output' and 'task_snapshot_id' read-only for existing objects
-            return self.readonly_fields + ('task', 'flow_run', 'start_time', 'end_time', 'task_complete')
+            return self.readonly_fields + ('task', 'flow_run', 
+                                        #    'start_time', 'end_time',
+                                             'task_complete')
         return self.readonly_fields

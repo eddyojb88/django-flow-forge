@@ -81,6 +81,7 @@ class TaskExecutor:
         logging.info(f"Setting up task: {self.task_name}...")
 
         self.task_snapshot = make_task_snapshot(flow_task_obj,)
+        self.task_name_snapshot = self.task_name
 
         task_run = ExecutedTask.objects.create(
             flow_run=flow_run,
