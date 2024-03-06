@@ -3,7 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse
 
-from django_flow_forge.tasks_db import run_flow
+from django_flow_forge.flow_engine import run_flow
 from django_flow_forge import models as mlops_models
 
  # This is important in order to load up your tasks and allow django_ml_ops to register each task

@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.db import IntegrityError
 from unittest.mock import patch, MagicMock
 from .models import Process, ProcessTask, ExecutedProcess, ExecutedTask
-from .tasks_db import register_task, register_task_pipeline, resolve_dependencies_get_task_order, execute_task
+from .flow_engine import register_task, register_task_pipeline, resolve_dependencies_get_task_order, execute_task
 
 class TaskRegistrationTests(TestCase):
     @patch('django_flow_forge.tasks_db.ProcessTask.objects.get_or_create')

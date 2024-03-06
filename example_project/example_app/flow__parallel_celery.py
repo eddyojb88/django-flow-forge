@@ -1,4 +1,4 @@
-from django_flow_forge.tasks_db import register_task_flow
+from django_flow_forge.flow_engine import register_task_flow
 
 from datetime import datetime
 from celery import shared_task

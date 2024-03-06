@@ -8,7 +8,7 @@ By relying on Django, a mature web server framework with modules that already so
 As most data science projects grow, they typically end up requiring a production ready pipeline process and to serve the model in some way.
 The intelligent design here is that you learn how to use Django, rather than a plethora of other cobbled together tech, minimizing the technical risk of your projects.
 
-![mlops_gif](https://github.com/eddyojb88/django-flow-forge/assets/22086433/9ea13500-2019-4145-995f-1fd855f51c74)
+![flow-forge-v0](https://github.com/eddyojb88/django-flow-forge/assets/22086433/7e3a81d7-ef98-4a99-96f7-f39d4f44ff9c)
 
 ## Features
 
