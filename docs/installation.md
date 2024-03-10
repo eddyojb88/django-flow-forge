@@ -2,7 +2,7 @@
 
 ##    Install via Pip
 
-```pip install django_flow_forge```
+```pip install django-flow-forge```
 
 However, if new to this module see the next section for an example app.
 
