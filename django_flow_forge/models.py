@@ -6,6 +6,12 @@ class Flow(models.Model):
     flow_display_name = models.CharField(null=True, blank=True, max_length=255,)
     in_current_code_base = models.BooleanField(default=True, null=False, blank=True)
 
+    class Meta:
+        permissions = [
+            ("django_flow_admin_access", "Can access Django Flow Admin"),
+        ]
+
+
     def save(self, *args, **kwargs):
         # Check if flow_display_name is not provided or is empty
         if not self.flow_display_name:

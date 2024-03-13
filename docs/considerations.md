@@ -44,10 +44,6 @@ This is great for communicating to stakeholders what it is that you are working 
 
 It is recommended to consider Celery Beat with Django for this. There is lots of documentation on this and the beauty of this module is that your choice of solution is not necessarily prescribed.
 
-## Authentication and Authorization
-
-Custom authentication and authorization decorators are coming very soon.
-
 ## Parallelisation
 This is always a tricky topic and so care is required in designing from the outset.
 

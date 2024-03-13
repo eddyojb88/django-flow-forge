@@ -12,7 +12,9 @@ from django.shortcuts import render
 import json
 
 from django_flow_forge.task_utils import get_cytoscape_nodes_and_edges
+from django_flow_forge.authorization import user_has_permission
 
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def conceptual_dag_viz(request,):
 
     if request.htmx:
@@ -49,6 +51,7 @@ def conceptual_dag_viz(request,):
 
     return render(request, 'django_flow_forge/dag_conceptual_index.html', context=context)
 
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def tasks_run_viz(request):
 
     if request.htmx:
@@ -123,6 +126,7 @@ def summary_chart_view():
     
     return line_chart_data, pie_chart_data
 
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def update_node_info(request):
 
     if request.htmx:
@@ -163,6 +167,7 @@ def update_node_info(request):
         
     return HttpResponse("Request must be made via HTMX.", status=400)
 
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def display_ml_results_table(request):
 
     executed_flow_id = request.GET.get('current_executed_flow_id')
@@ -179,6 +184,7 @@ def display_ml_results_table(request):
         
     return render(request, 'django_flow_forge/components/ml_result.html', context)
 
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def fetch_ml_viz_data(request):
     # This is where you fetch or generate your data for visualization
     executed_flow_id = request.GET.get('current_executed_flow_id')
