@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = 'django-flow-forge'  # Set the namespace for this app's URLs
+
 urlpatterns = [
 
     path('conceptual-dag-viz/', views.conceptual_dag_viz, name='conceptual-dag-viz'),
