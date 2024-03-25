@@ -4,7 +4,7 @@
     <hr class="title-hr mb-5">
     
     <div id="data-div1" class="text-light d-none"
-        hx-get="{% url 'update-node-info' %}"
+        hx-get="{% url 'django-flow-forge:update-node-info' %}"
         hx-trigger="tap from:#data-div1" 
         hx-target="#node-output"
         hx-swap="innerHTML"

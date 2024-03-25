@@ -113,7 +113,7 @@
                                 </td>
                                 <td class="text-center">
                                     <button name='executed_flow_option' value='{{ flow.id }}' class="btn btn-primary badge btn-sm" 
-                                    hx-get="{% url 'tasks_run_viz' %}" hx-target="#cytoscape-and_ml-outer-row" hx-swap="innerHTML">
+                                    hx-get="{% url 'django-flow-forge:tasks_run_viz' %}" hx-target="#cytoscape-and_ml-outer-row" hx-swap="innerHTML">
                                         <i class="fas fa-play"></i> Draw Graph
                                     </button>
                                 </td>

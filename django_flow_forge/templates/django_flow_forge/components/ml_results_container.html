@@ -12,7 +12,7 @@
                         <select name='ml_result_option' 
                                 class="form-control"
                                 id="select-ml-experiment" 
-                                hx-get="{% url 'display_ml_results' %}"
+                                hx-get="{% url 'django-flow-forge:display_ml_results' %}"
                                 hx-trigger="load,change"
                                 hx-target="#ml-result-table"
                                 hx-swap="outerHTML"
@@ -44,7 +44,7 @@
             <div class="col-lg-6 mt-3">
 
                 {% block ml_viz_button %}
-                    <button hx-get="{% url 'fetch_ml_viz_data' %}" 
+                    <button hx-get="{% url 'django-flow-forge:fetch_ml_viz_data' %}" 
                             hx-target="#ml-result-viz-content" 
                             hx-swap="innerHTML"
                             hx-trigger="click" 

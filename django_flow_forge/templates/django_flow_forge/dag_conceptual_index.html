@@ -34,7 +34,7 @@
                 
             <label class="mb-3 text-light">Select Process to Visualize:</label>
                     <select name='flow_option' class="form-control" id="graphSelector"
-                            hx-get="{% url 'conceptual-dag-viz' %}"
+                            hx-get="{% url 'django-flow-forge:conceptual-dag-viz' %}"
                             hx-trigger="change"
                             hx-include="[name='flow_option'], [name='show_nested']"
                             hx-target="#cy-graph" 
@@ -60,7 +60,7 @@
             <div class="custom-control custom-switch">
                 <label class="custom-control-label text-light" for="nestedTasksToggle">Show nested tasks: </label>
                 <input name='show_nested' type="checkbox" class="custom-control-input" id="nestedTasksToggle"
-                        hx-get="{% url 'conceptual-dag-viz' %}"
+                        hx-get="{% url 'django-flow-forge:conceptual-dag-viz' %}"
                         hx-target="#cy-graph" 
                         hx-swap="outerHTML"
                         hx-include="[name='flow_option'], [name='show_nested']"
