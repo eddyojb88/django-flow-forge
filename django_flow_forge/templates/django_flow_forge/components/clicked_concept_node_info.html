@@ -1,0 +1,42 @@
+<style>
+    pre {
+        white-space: pre-wrap; /* Allows the text to wrap */
+        word-wrap: break-word; /* Breaks the words to prevent overflow */
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/atom-one-dark.min.css">
+
+
+    <div class="node-info-container border rounded p-3">
+        <h2 class="header-line mb-3">Task Details</h2>
+        
+        <div class="row mb-2">
+            <div class="col-sm-2 text-light"><strong>Task Name:</strong></div>
+            <div class="col-sm-10 text-light">{{ task.task_name }}</div>
+        </div>
+
+        <!-- <div class="row mb-2">
+            <div class="col-sm-3 text-light"><strong>Docstring:</strong></div>
+            <div class="col-sm-9 text-light">
+                <pre><code class="python">{{ task.docstring }}</code></pre>
+            </div>
+        </div> -->
+
+        <div class="row">
+            <div class="col-sm-1 text-light"><strong>Code:</strong></div>
+            <div class="col-sm-11 text-light">
+                <pre><code class="python">{{ task.code }}</code></pre>
+            </div>
+        </div>
+    </div>
+
+
+<script>hljs.highlightAll();</script>
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        console.log('running highlightjs')
+        hljs.highlightAll();
+    });
+</script> -->

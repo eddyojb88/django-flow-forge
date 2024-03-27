@@ -22,65 +22,64 @@
 <body style="background-color:black" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-ext="debug, event-header">
 
     <!-- HTMX Dropdown menu -->
-    <div class="container">
-     <div class="row">
-        <div class="col">
-            <h2 class="display-4 mb-5 text-light">Flows in Concept</h2>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col">
-                
-            <label class="mb-3 text-light">Select Process to Visualize:</label>
-                    <select name='flow_option' class="form-control" id="graphSelector"
-                            hx-get="{% url 'django-flow-forge:conceptual-dag-viz' %}"
-                            hx-trigger="change"
-                            hx-include="[name='flow_option'], [name='show_nested']"
-                            hx-target="#cy-graph" 
-                            hx-swap="outerHTML" 
-                            >
-                
-                            {% for flow in all_flowes %}
-
-                                 <option value="{{ flow.id }}" {% if forloop.first %}selected{% endif %}>
-                            
-                                    {{ flow.flow_name }}
-        
-                                 </option>
-                            
-                            {% endfor %}
-                    </select> 
-         </div>
-            
-    </div>
-
-    <div class="row">
-        <div class="col">
-            <div class="custom-control custom-switch">
-                <label class="custom-control-label text-light" for="nestedTasksToggle">Show nested tasks: </label>
-                <input name='show_nested' type="checkbox" class="custom-control-input" id="nestedTasksToggle"
-                        hx-get="{% url 'django-flow-forge:conceptual-dag-viz' %}"
-                        hx-target="#cy-graph" 
-                        hx-swap="outerHTML"
-                        hx-include="[name='flow_option'], [name='show_nested']"
-                        >
-                
+    <div class="container-flex mx-3">
+        <div class="row">
+            <div class="col">
+                <h2 class="display-4 mb-5 text-light">Flows in Concept</h2>
             </div>
         </div>
-    </div>
 
-    <div class="row">
-        <div id="dag-cyto-col" class="col">
+      <div class="row">
+            <div class="col-md-5">
+                    
+                <label class="mb-3 text-light">Select Flow Process to Visualize:</label>
+                        <select name='flow_option' class="form-control" id="graphSelector"
+                                hx-get="{% url 'django-flow-forge:conceptual-dag-viz' %}"
+                                hx-trigger="change"
+                                hx-include="[name='flow_option'], [name='show_nested']"
+                                hx-target="#cy-graph" 
+                                hx-swap="outerHTML" 
+                                >
+                    
+                                {% for flow in all_flowes %}
+
+                                    <option value="{{ flow.id }}" {% if forloop.first %}selected{% endif %}>
+                                
+                                        {{ flow.flow_name }}
+            
+                                    </option>
+                                
+                                {% endfor %}
+                        </select> 
+            </div>
+                
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-5">
+                <div class="custom-control custom-switch">
+                    <label class="custom-control-label text-light" for="nestedTasksToggle">Show nested tasks: </label>
+                    <input name='show_nested' type="checkbox" class="custom-control-input" id="nestedTasksToggle"
+                            hx-get="{% url 'django-flow-forge:conceptual-dag-viz' %}"
+                            hx-target="#cy-graph" 
+                            hx-swap="outerHTML"
+                            hx-include="[name='flow_option'], [name='show_nested']"
+                            >
+                    
+                </div>
+            </div>
+        </div>
+        <div class="row mt-5 mb-5">
             {% include 'django_flow_forge/components/dag_cyto_conceptual_container.html' %}
         </div>
-    </div>
+
     
 
 </body>
 <footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
 
 </footer>
 </html>

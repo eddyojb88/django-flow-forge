@@ -1,6 +1,7 @@
 
         <!-- Placeholder for HTMX response handling -->
         <div id="cy-graph" style="width: 100%; height: 600px;" class="border rounded"></div>
+        <input type="hidden" class="include-input" id='current_flow_option' name="current_flow_option" value={{ current_flow_id }}>
         
         
         <script>
@@ -39,5 +40,17 @@
                 rankSep: 30 // Increase rank separation; adjust as needed
             }
         });
+
+        // Add event listener for node clicks
+        cy.on('tap', 'node', function(evt){
+
+            var nodeId = (typeof evt.target.id == 'function') ? evt.target.id() : ""
+            var flowId = "{{ current_flow_id }}"; // Render Django variable into JS
+
+            // Trigger HTMX request upon clicking the node
+            console.log('Sending click event to body with node id: ' + nodeId + ' and flow id: ' + flowId)
+            htmx.trigger(htmx.find('#data-div1'), "tap", {'clicked_node_id':nodeId, 'executed_flow_option': flowId});
+
+            });
         
         </script>

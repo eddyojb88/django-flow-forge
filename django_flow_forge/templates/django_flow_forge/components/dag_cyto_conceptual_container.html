@@ -1,6 +1,21 @@
+<div id="cytoscape-and_ml-outer-row" class="row">
+    <!-- <h3 class="display-6 text-light">Flow Graph</h3> -->
+    <hr class="title-hr mb-5">
+    
+    <div id="data-div1" class="text-light d-none"
+        hx-get="{% url 'django-flow-forge:update-concept-node-info' %}"
+        hx-trigger="tap from:#data-div1" 
+        hx-target="#node-output"
+        hx-swap="innerHTML"
+        hx-include="#current_flow_option"
+        hx-vals='js:{clicked_node_id: event.detail["clicked_node_id"]}'>
+    </div>
 
-<div id="cy" style="width: 100%; height: 800px">
+    <div class="col-lg-7">
+    <!-- <div id="cy" style="width: 100%; height: 800px"> -->
+        {% include 'django_flow_forge/components/dag_cyto_conceptual_script.html' %}
+    </div>
 
-    {% include 'django_flow_forge/components/dag_cyto_conceptual_script.html' %}
+    <div id="node-output" class="text-light col-lg-5"></div>
 
 </div>

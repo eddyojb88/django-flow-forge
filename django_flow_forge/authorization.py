@@ -19,7 +19,7 @@ def check_user_has_permission(request, permission, allow_superuser):
         return True
     return False
 
-def user_has_permission(permission, allow_superuser=True):
+def user_has_permission(permission='django_flow_forge.django_flow_admin_access', allow_superuser=True):
     """
     A decorator to check if the user has a specific permission.
     Redirects to login page if not authenticated, and returns a 403 Forbidden response if lacking the permission.
@@ -34,7 +34,11 @@ def user_has_permission(permission, allow_superuser=True):
                 return view_func(request, *args, **kwargs)
             # If the user doesn't have the permission, return a HTTP 403 Forbidden response
             return HttpResponseForbidden('You have not been assigned with Permission to the Django Flow Forge admin group.')
+        
+        setattr(_wrapped_view, permission, True)
         return _wrapped_view
+        
+
     return decorator
 
 

@@ -28,7 +28,7 @@ def conceptual_dag_viz(request,):
         show_nested = False
 
     # Assuming FlowTask is your model and flow_name is a field in this model
-    all_flowes = models.Flow.objects.all()
+    all_flows = models.Flow.objects.all()
 
     # Fetch all FlowTask instances for a given flow_name
     tasks = models.FlowTask.objects.filter(flow=flow,).prefetch_related('depends_on')
@@ -41,7 +41,8 @@ def conceptual_dag_viz(request,):
     context = {
         # 'plotly_fig': plot_div,  # The Plotly figure in HTML div format
         'graph_json': graph_json_serialized,
-        'all_flowes': all_flowes,
+        'all_flowes': all_flows,
+        'current_flow_id': flow.id,
     }
 
     if request.htmx:
@@ -51,6 +52,32 @@ def conceptual_dag_viz(request,):
         return HttpResponse(html)
 
     return render(request, 'django_flow_forge/dag_conceptual_index.html', context=context)
+
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
+def update_conceptual_node_info(request):
+
+    if request.htmx:
+
+        node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
+        flow_id = request.GET.get('current_flow_option', None)
+        context = {}
+        if node_id:
+
+            flow = models.Flow.objects.get(id=flow_id)
+
+            if models.FlowTask.objects.filter(id=node_id, flow=flow).exists():
+
+                task = models.FlowTask.objects.get(id=node_id, flow=flow)
+                context['task'] = task
+
+            else:
+                logging.warning('No object found for this flow task.')
+
+
+            return render(request, 'django_flow_forge/components/clicked_concept_node_info.html', context)
+        
+    return HttpResponse("Request must be made via HTMX.", status=400)
+
 
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def tasks_run_viz(request):
@@ -128,7 +155,7 @@ def summary_chart_view():
     return line_chart_data, pie_chart_data
 
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
-def update_node_info(request):
+def update_task_run_node_info(request):
 
     if request.htmx:
 
@@ -164,7 +191,7 @@ def update_node_info(request):
                 logging.warning('No object found for this flow task.')
 
 
-            return render(request, 'django_flow_forge/components/clicked_node_info.html', context)
+            return render(request, 'django_flow_forge/components/clicked_executed_task_node_info.html', context)
         
     return HttpResponse("Request must be made via HTMX.", status=400)
 

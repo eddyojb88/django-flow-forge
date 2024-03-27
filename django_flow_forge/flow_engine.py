@@ -7,6 +7,7 @@ from .task_utils import get_cytoscape_nodes_and_edges
 from django.conf import settings
 from django.utils import timezone
 import time
+import inspect
 
 from django.db import transaction
 from .models import Flow, FlowTask
@@ -33,6 +34,8 @@ def register_task(flow, task_name, task_info, nested):
     depends_on = task_info.get('depends_on', [])
     depends_bidirectionally_with = task_info.get('depends_bidirectionally_with', [])
     
+    function = task_info.get('function')
+    
     # Create or update the task in the database
     task, _ = FlowTask.objects.get_or_create(
         task_name=task_name, 
@@ -40,10 +43,15 @@ def register_task(flow, task_name, task_info, nested):
         nested=nested,
     )
 
+    task.docstring = function.__doc__ if function else None
+    task.code = inspect.getsource(function) if function else None
+
     # Set dependencies if any are specified
     if depends_on or depends_bidirectionally_with:
         set_dependencies(task, depends_on, depends_bidirectionally_with, flow)
 
+    task.save()
+    
     return task
 
 def register_task_flow(flow_name, pipeline, clear_existing_flow_in_db=True, **kwargs):

@@ -31,6 +31,8 @@ class FlowTask(models.Model):
     task_output = models.JSONField(default=dict)  # Field to store the function output
     depends_bidirectionally_with = models.ManyToManyField('self', symmetrical=True, blank=True,)
     nested = models.BooleanField(default=False, null=False, blank=True)
+    docstring = models.TextField(blank=True, null=True)
+    code = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = [['flow', 'task_name']]  # Updated to reference 'flow' instead of 'flow_name'
