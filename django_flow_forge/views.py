@@ -10,6 +10,7 @@ from django.db.models import Count
 from django.db.models.functions import TruncDay
 from django.shortcuts import render
 import json
+import logging
 
 from django_flow_forge.task_utils import get_cytoscape_nodes_and_edges
 from django_flow_forge.authorization import user_has_permission
