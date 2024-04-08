@@ -23,7 +23,7 @@ class TaskExecutor:
 
         # If the task is async, you might want to handle the result differently                
         self.flow_run.last_checkpoint_datetime = timezone.now()
-        self.flow_run.save()
+        self.flow_run.save(update_fields=['last_checkpoint_datetime'])
 
     def submit_task(self, **kwargs):
 
@@ -285,6 +285,6 @@ def post_flow_graph_to_add_status(flow_run):
             i['data']['status'] = etask[0].status
     snapshot['graph']['nodes'] = nodes
     flow_run.flow_snapshot = snapshot
-    flow_run.save()
+    flow_run.save(update_fields=['flow_snapshot'])
 
     return
