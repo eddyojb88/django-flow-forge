@@ -61,6 +61,7 @@ class ExecutedFlow(models.Model):
     last_checkpoint_datetime = models.DateTimeField(blank=True, auto_now_add=True)
     flow_snapshot = models.JSONField(default=dict)  # Captures the output of the task for this run
     exceptions = models.JSONField(default=dict, null=True, blank=True)
+    params = models.JSONField(default=dict, null=True, blank=True)
 
     def __str__(self):
         if self.flow:

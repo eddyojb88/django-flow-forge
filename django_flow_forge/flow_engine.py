@@ -294,7 +294,7 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
                 elif executor.task_run.status == 'in_progress':
                     
                     # Else if task is in progress then check status and collect data #
-                    if counter % 1000:
+                    if counter % 1000 == 0:
                         executor.create_checkpoint()
             
                     if executor.task_is_ready_for_close():
