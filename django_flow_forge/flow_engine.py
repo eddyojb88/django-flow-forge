@@ -121,7 +121,7 @@ def register_task_flow(flow_name, pipeline, clear_existing_flow_in_db=True, **kw
         if tasks_to_delete:
             FlowTask.objects.filter(flow=flow, task_name__in=tasks_to_delete).delete()
 
-        return updated_tasks
+    return updated_tasks
 
 def set_dependencies(task, depends_on, depends_bidirectionally_with, flow):
     """
@@ -277,40 +277,36 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
 
             executor = executors[task_name]
 
-            try:
-                ''' If all dependencies are met, execute the task '''
-                if task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
+            ''' If all dependencies are met, execute the task '''
+            if task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
 
-                    executor.submit_task(**kwargs)
+                executor.submit_task(**kwargs)
 
-                    executor.create_checkpoint()
+                executor.create_checkpoint()
 
-                    if executor.task_is_ready_for_close():
-                        # collect output
-                        executor.collect_and_store_output()
+                if executor.task_is_ready_for_close():
+                    # collect output
+                    executor.collect_and_store_output()
 
-                        executor.task_post_process()
+                    executor.task_post_process()
+            
+            elif executor.task_run.status == 'in_progress':
                 
-                elif executor.task_run.status == 'in_progress':
-                    
-                    # Else if task is in progress then check status and collect data #
-                    if counter % 1000 == 0:
-                        executor.create_checkpoint()
-            
-                    if executor.task_is_ready_for_close():
-                        # collect output
-                        executor.collect_and_store_output()
+                # Else if task is in progress then check status and collect data #
+                if counter % 1000 == 0:
+                    executor.create_checkpoint()
+        
+                if executor.task_is_ready_for_close():
+                    # collect output
+                    executor.collect_and_store_output()
 
-                        executor.task_post_process()
+                    executor.task_post_process()
 
-                elif executor.task_run.status == 'failed':
-                    flow_run.status = 'failed'
-                    post_flow_graph_to_add_status(flow_run)
-                    flow_run.save()
-                    break
-            
-            finally:
-                pass
+            elif executor.task_run.status == 'failed':
+                flow_run.status = 'failed'
+                post_flow_graph_to_add_status(flow_run)
+                flow_run.save()
+                break
 
         # Optional: Implement a more sophisticated mechanism to avoid tight looping
         time.sleep(1)

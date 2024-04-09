@@ -46,9 +46,9 @@ def conceptual_dag_viz(request,):
     }
 
     if request.htmx:
-
+        context = {'graph_json': graph_json_serialized, 'current_flow_id': flow.id}
         # Render a partial template with the new Cytoscape graph
-        html = render_to_string('django_flow_forge/components/dag_cyto_conceptual_script.html', {'graph_json': graph_json_serialized})
+        html = render_to_string('django_flow_forge/components/dag_cyto_conceptual_script.html', context=context )
         return HttpResponse(html)
 
     return render(request, 'django_flow_forge/dag_conceptual_index.html', context=context)
@@ -59,7 +59,7 @@ def update_conceptual_node_info(request):
     if request.htmx:
 
         node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
-        flow_id = request.GET.get('current_flow_option', None)
+        flow_id = request.GET.get('executed_flow_option', None)
         context = {}
         if node_id:
 

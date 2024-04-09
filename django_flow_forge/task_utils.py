@@ -107,7 +107,7 @@ class TaskExecutor:
         if not FlowTask.objects.filter(id=self.task_run.task.id).exists():
             self.task_run.task = None
 
-        self.task_run.save()
+        self.task_run.save(update_fields=['status', 'end_time', 'task_complete', 'output'])
         return True
 
     def collect_and_store_output(self):
@@ -128,7 +128,7 @@ class TaskExecutor:
         if not FlowTask.objects.filter(id=self.task_run.task.id).exists():
             self.task_run.task = None
             
-        self.task_run.save()
+        self.task_run.save(update_fields=['status', 'end_time', 'exceptions',])
         return False
     
     def function_accepts_kwargs(self, func):
