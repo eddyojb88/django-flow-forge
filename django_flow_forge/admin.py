@@ -28,7 +28,7 @@ class ExecutedFlowAdmin(admin.ModelAdmin):
     list_display = ('flow', 'flow_name_snapshot', 'start_time', 'end_time', 'executed_by', 'flow_complete')
     list_filter = ('flow', 'flow_complete')
     search_fields = ['flow__flow_name', 'executed_by']
-    filter_horizontal = ('executed_tasks',)
+    # filter_horizontal = ('executed_tasks',)
     readonly_fields = ('flow_snapshot',)
 
     def get_readonly_fields(self, request, obj=None):
@@ -51,3 +51,11 @@ class ExecutedTaskAdmin(admin.ModelAdmin):
                                         #    'start_time', 'end_time',
                                              'task_complete')
         return self.readonly_fields
+
+@admin.register(models.BatchHandler)
+class BatchHandlerAdmin(admin.ModelAdmin):
+    list_display = ('id', 'batch_ref_name', 'total_batch_count', 'temp_data',)
+
+@admin.register(models.FlowBatch)
+class FlowBatchAdmin(admin.ModelAdmin):
+    list_display = ('id', 'batch_handler', 'flow_batch_number', 'temp_data',)

@@ -39,6 +39,7 @@ class CeleryTaskExecutor(TaskExecutor, AsyncTaskExecutor):
         """
 
         self.task_run.status = 'in_progress'
+        kwargs['current_task_name'] = self.task_name
         accepts_kwargs = self.function_accepts_kwargs(self.function)
 
         if accepts_kwargs:

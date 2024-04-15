@@ -31,13 +31,15 @@ class TaskExecutor:
         Executes a specific task as part of a flow run, handling logging, execution, and status updates.
 
         """
-        
+        kwargs['current_task_name'] = self.task_name
         self.task_run.status = 'in_progress'
         accepts_kwargs = self.function_accepts_kwargs(self.function)
         
         try:
             if accepts_kwargs:
                 filtered_kwargs = kwargs
+                kwargs['flow_name'] = self.flow_name
+                kwargs['task_name'] = self.task_name
                 
             else:
                 filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)

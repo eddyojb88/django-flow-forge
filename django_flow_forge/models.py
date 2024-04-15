@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.serializers.json import DjangoJSONEncoder
 
 class Flow(models.Model):
 
@@ -54,7 +55,8 @@ class ExecutedFlow(models.Model):
     flow_name_snapshot = models.CharField(null=True, blank=True, max_length=255)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    executed_tasks = models.ManyToManyField(FlowTask, related_name='executed_tasks', blank=True)
+    batch_handler = models.ForeignKey('BatchHandler', on_delete=models.CASCADE, related_name='executed_flows', null=True, blank=True)
+    # executed_tasks = models.ManyToManyField(FlowTask, related_name='executed_tasks', blank=True)
     executed_by = models.CharField(null=True, blank=True, max_length=255)
     flow_complete = models.BooleanField(default=False)  # Indicates if the flow run is complete
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -62,6 +64,7 @@ class ExecutedFlow(models.Model):
     flow_snapshot = models.JSONField(default=dict)  # Captures the output of the task for this run
     exceptions = models.JSONField(default=dict, null=True, blank=True)
     params = models.JSONField(default=dict, null=True, blank=True)
+    meta = models.JSONField(default=dict, null=True, blank=True)
 
     def __str__(self):
         if self.flow:
@@ -89,7 +92,19 @@ class ExecutedTask(models.Model):
         else:
             task_name = self.task.task_name
         return f"Run of '{task_name}' for '{self.flow_run}'. Completed: {self.task_complete}"
-    
+
+class BatchHandler(models.Model):
+    '''Model to handle batch processing using the same Flow - sometimes you want to run the flow in batches not batches within a flow.
+       This is also a useful option if you want to chain together Flows in a batch'''
+    batch_ref_name = models.CharField(null=True, blank=True, max_length=255) # Optional reference name
+    total_batch_count = models.IntegerField(default=0, null=False, blank=False,)
+    temp_data = models.JSONField(null=True, default=dict, encoder=DjangoJSONEncoder)
+
+class FlowBatch(models.Model):
+    batch_handler = models.ForeignKey(BatchHandler, on_delete=models.CASCADE, related_name='batch', null=True, blank=True)
+    flow_batch_number = models.IntegerField(default=0, null=False, blank=False,)
+    temp_data = models.JSONField(null=True, default=dict, encoder=DjangoJSONEncoder)
+
 class MLResult(models.Model):
 
     executed_flow = models.ForeignKey(ExecutedFlow, null=True, blank=True, on_delete=models.SET_NULL, related_name='ml_runs')

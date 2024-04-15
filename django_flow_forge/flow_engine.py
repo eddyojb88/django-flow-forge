@@ -10,7 +10,7 @@ import time
 import inspect
 
 from django.db import transaction
-from .models import Flow, FlowTask
+from .models import Flow, FlowTask, BatchHandler, FlowBatch
 from .task_utils import post_flow_graph_to_add_status, make_task_snapshot, make_flow_snapshot
 
 flow_pipeline_lookup = {}
@@ -227,7 +227,7 @@ class DebugExecutor:
         executor.task_output = executor.function(**kwargs)
         return
 
-def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
+def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kwargs):
     '''
     Initiates and executes a flow pipeline by name, handling task execution and flow status updates.
 
@@ -250,6 +250,12 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
         logging.error(f"Failed to initiate flow run for {flow_name}: {e}")
         raise Exception('You may not have imported the pipeline in to the program, have spelt the flow wrong or are referring to a pipeline that no longer exists.')
 
+    if flow_batch_id:
+        batch = FlowBatch.objects.get(id=flow_batch_id)
+        if flow_name in batch.temp_data.get('executed_flows', []):
+            print(f'''Not running flow "{flow_name}" Batch: f{batch.flow_batch_number} as it is flagged as already run''')
+            return
+
     flow_pipeline = flow_pipeline_lookup.get(flow_name)
     flow_snapshot = make_flow_snapshot(flow_pipeline, task_order)
     flow_snapshot['graph'] = get_cytoscape_nodes_and_edges(all_task_objs, show_nested=True)
@@ -257,6 +263,8 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
     flow_run.flow_snapshot = flow_snapshot
     flow_run.save()
     kwargs['executed_flow_id'] = flow_run.id
+    kwargs['flow_name'] = flow_name
+    kwargs['flow_batch_id'] = flow_batch_id
         
     executors = {}
 
@@ -265,6 +273,7 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
         executor = get_executor(task_dict, task_name, **kwargs)
         executor.flow = flow
         executor.flow_run = flow_run
+        executor.flow_name = flow_name
         executor.setup_flow_task(flow, flow_run,)
         executor.debug_executor = debug_executor
         executors[task_name] = executor
@@ -324,6 +333,13 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), **kwargs):
     
     post_flow_graph_to_add_status(flow_run)
     flow_run.save()
+
+    if flow_batch_id:
+        batch = FlowBatch.objects.get(id=flow_batch_id)
+        executed = batch.temp_data.get('executed_flows', [])
+        executed.append(flow_name)
+        batch.temp_data['executed_flows'] = executed
+        batch.save(update_fields=['temp_data'])
 
     logging.info(f"All tasks for flow {flow_name} completed successfully.")
 
