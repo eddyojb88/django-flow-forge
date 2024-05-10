@@ -99,6 +99,10 @@ class BatchHandler(models.Model):
     batch_ref_name = models.CharField(null=True, blank=True, max_length=255) # Optional reference name
     total_batch_count = models.IntegerField(default=0, null=False, blank=False,)
     temp_data = models.JSONField(null=True, default=dict, encoder=DjangoJSONEncoder)
+    date_initialised = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.batch_ref_name} (Batch count: {self.total_batch_count})'
 
 class FlowBatch(models.Model):
     batch_handler = models.ForeignKey(BatchHandler, on_delete=models.CASCADE, related_name='batch', null=True, blank=True)

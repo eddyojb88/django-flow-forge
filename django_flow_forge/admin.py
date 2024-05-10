@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.text import Truncator
+
 from . import models
 
 @admin.register(models.Flow)
@@ -54,8 +56,19 @@ class ExecutedTaskAdmin(admin.ModelAdmin):
 
 @admin.register(models.BatchHandler)
 class BatchHandlerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'batch_ref_name', 'total_batch_count', 'temp_data',)
+    list_filter = ('batch_ref_name', 'date_initialised',)
+    search_fields = ['task__task_name', 'date_initialised', 'flow_run__flow__flow_name']
+    list_display = ('id', 'date_initialised', 'batch_ref_name', 'total_batch_count', 'temp_data',)
 
 @admin.register(models.FlowBatch)
 class FlowBatchAdmin(admin.ModelAdmin):
-    list_display = ('id', 'batch_handler', 'flow_batch_number', 'temp_data',)
+    list_display = ('id', 'get_date_initialised', 'batch_handler', 'flow_batch_number', 'truncated_temp_data',)
+
+    def get_date_initialised(self, obj):
+        return obj.batch_handler.date_initialised
+    get_date_initialised.admin_order_field = 'batch_handler__date_initialised'  # Allows column order sorting
+    get_date_initialised.short_description = 'Date Initialised'  # Renames the column header
+
+    def truncated_temp_data(self, obj):
+        return Truncator(obj.temp_data).chars(50)
+    truncated_temp_data.short_description = 'Temp Data'  # Custom header for the truncated field

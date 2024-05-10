@@ -9,7 +9,7 @@ from . import models
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic import ListView
-
+from django.contrib.auth.views import redirect_to_login 
 from django.contrib.auth.decorators import login_required
 
 def check_user_has_permission(request, permission, allow_superuser):

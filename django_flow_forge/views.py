@@ -162,11 +162,11 @@ def update_task_run_node_info(request):
         node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
         executed_flow_id = request.GET.get('current_executed_flow_option', None)
 
+        context = {}
+
         if node_id:
 
-            executed_flow = models.ExecutedFlow.objects.get(id=executed_flow_id)
-
-            if models.ExecutedTask.objects.filter(task_snapshot_id=node_id, flow_run=executed_flow).exists():
+            if models.ExecutedTask.objects.filter(task_snapshot_id=node_id, flow_run_id=executed_flow_id).exists():
 
                 executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, flow_run=executed_flow)
                 executed_task_summary = {}
@@ -180,7 +180,7 @@ def update_task_run_node_info(request):
                 else:    
                     executed_task_summary['Output'] = executed_task.output
                 
-                context = {'executed_task_summary': executed_task_summary}
+                context['executed_task_summary'] = executed_task_summary
 
                 ''' Check if any machine learning experiments associated with node'''
                 ml_results = models.MLResult.objects.filter(executed_flow=executed_flow)
