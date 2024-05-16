@@ -42,7 +42,7 @@ def user_has_permission(permission='django_flow_forge.django_flow_admin_access',
     return decorator
 
 
-class FlowForgePermissionMixin(AccessMixin):
+class FlowForgePermissionMixin(LoginRequiredMixin, AccessMixin):
     # Permission to check for
     permission_required = 'django_flow_forge.django_flow_admin_access'
     # Whether to allow superusers access regardless of the permission
@@ -51,6 +51,10 @@ class FlowForgePermissionMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
         if self.permission_required is None:
             raise AttributeError("UserHasPermissionMixin requires 'permission_required' attribute to be set.")
+
+        # Check if the user is authenticated first (handled by LoginRequiredMixin)
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
 
         # Utilize the check_user_has_permission function
         has_permission = check_user_has_permission(request, self.permission_required, self.allow_superuser)
