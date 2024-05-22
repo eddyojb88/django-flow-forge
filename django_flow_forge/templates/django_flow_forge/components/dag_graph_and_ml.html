@@ -5,7 +5,7 @@
     
     <div id="data-div1" class="text-light d-none"
         hx-get="{% url 'django-flow-forge:update-node-info' %}"
-        hx-trigger="every 10s, tap from:#data-div1" 
+        hx-trigger="tap from:#data-div1" 
         hx-target="#node-output"
         hx-swap="innerHTML"
         hx-include="[name='current_flow_option']"

@@ -4,6 +4,7 @@ from django.conf import settings
 def get_flow_batches(total_batch_count, batch_ref_name=None, del_prev_batch_data=False, **kwargs):
     
     if settings.DEBUG and not batch_ref_name:
+        print('Creating a batch in debug mode')
         batch_ref_name = 'DEBUG_MODE'
 
     if batch_ref_name:
@@ -15,7 +16,8 @@ def get_flow_batches(total_batch_count, batch_ref_name=None, del_prev_batch_data
         batch_handler.total_batch_count = total_batch_count
         batch_handler.save(update_fields=['total_batch_count'])
 
-    else:   
+    else:
+        print('Creating a new batch handler')
         batch_handler = BatchHandler.objects.create(total_batch_count=total_batch_count)
         batch_handler.save()
 
