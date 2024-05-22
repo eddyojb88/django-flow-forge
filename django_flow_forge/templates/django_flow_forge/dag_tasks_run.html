@@ -99,6 +99,7 @@
                                 <th scope="col">Process Name</th>
                                 <th scope="col">Start Time</th>
                                 <th class='text-center narrow-col' scope="col">Status</th>
+                                <th class='text-center narrow-col' scope="col">Metadata</th>
                                 <th scope="col"></th>
                             </tr>
                         </thead>
@@ -109,7 +110,10 @@
                                 <td>{{ flow.start_time }}</td>
                                 <td class="text-center">
                                     <span class="badge {{ flow.status }} text-dark">{{ flow.get_status_display }}</span>
-                                    
+                                </td>
+                                <td class="text-center">
+                                    <span>{{ flow.meta|slice:":300" }}{% if flow.meta|length > 300 %}...{% endif %}</span>
+
                                 </td>
                                 <td class="text-center">
                                     <button name='executed_flow_option' value='{{ flow.id }}' class="btn btn-primary badge btn-sm" 

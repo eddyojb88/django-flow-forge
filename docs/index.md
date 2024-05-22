@@ -1,12 +1,11 @@
 # Welcome to Django Flow Forge
 
-In a landscape cluttered with complex ML Ops solutions and vendor lock-in pitfalls that all carry significant gaps, Django Flow Forge aims to be a beacon of pragmatism when forging together your data science work flows.
+In a landscape cluttered with complex ML Ops solutions and vendor lock-ins that all carry significant pitfalls, Django Flow Forge aims to be a beacon of pragmatism when forging together your data science work flows.
 
 ## Designed for Data Scientists and Data Engineers
-By relying on Django, a mature web server framework with modules that already solves a lot of problems in ML Ops, this plugin module streamlines tech stacks in Data or ML Ops in the long run, focusing on standardization and flexibility as a project grows, allowing it to be more impactful.
+By relying on Django, a mature web server framework with modules that already solve a lot of problems in ML Ops, this plugin module aims to streamline tech stacks in Data or ML Ops *in the long run*, focusing on standardization and flexibility as a project grows, allowing it to be more impactful.
 
-As most data science projects grow, they typically end up requiring a production ready pipeline process and to serve the model in some way.
-The intelligent design here is that you learn how to use Django, rather than a plethora of other cobbled together tech, minimizing the technical risk of your projects.
+It has a more complex learning curve than other simple tools, but as most data science projects grow, they typically end up requiring a production ready pipeline process and to serve the model in some way, leading you back to a more complex tool like Django. The intelligent design here is that you learn how to use Django, rather than a plethora of other cobbled together tech, minimizing the long term technical risk of your projects.
 
 ![flow-forge-v0](https://github.com/eddyojb88/django-flow-forge/assets/22086433/7e3a81d7-ef98-4a99-96f7-f39d4f44ff9c)
 

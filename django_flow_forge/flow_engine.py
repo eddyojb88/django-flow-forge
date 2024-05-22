@@ -261,6 +261,8 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
     flow_snapshot['graph'] = get_cytoscape_nodes_and_edges(all_task_objs, show_nested=True)
     flow_snapshot['flow_name'] = flow_name
     flow_run.flow_snapshot = flow_snapshot
+    if kwargs.get('flow_metadata'):
+        flow_run.meta = kwargs.get('flow_metadata')
     flow_run.save()
     kwargs['executed_flow_id'] = flow_run.id
     kwargs['flow_name'] = flow_name

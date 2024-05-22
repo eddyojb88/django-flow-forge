@@ -41,7 +41,6 @@ def user_has_permission(permission='django_flow_forge.django_flow_admin_access',
 
     return decorator
 
-
 class FlowForgePermissionMixin(LoginRequiredMixin, AccessMixin):
     # Permission to check for
     permission_required = 'django_flow_forge.django_flow_admin_access'
