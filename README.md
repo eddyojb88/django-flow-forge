@@ -1,6 +1,6 @@
 # django-flow-forge
 
-This is a module built for Data Scientists and Data Engineers, here to help you forge your Data Ops or ML Ops processes in to simple, flexible and impactful work flows, steering clear of the unnecessary complexities of other packages and vendor lock-in that plague many projects.
+This is a production ready module built for Data Scientists and Data Engineers, here to help you forge your Data Ops or ML Ops processes in to simple, flexible and impactful work flows, steering clear of the unnecessary complexities of other packages and vendor lock-in that plague many projects.
 
 ![flow-forge-v0](https://github.com/eddyojb88/django-flow-forge/assets/22086433/7e3a81d7-ef98-4a99-96f7-f39d4f44ff9c)
 
