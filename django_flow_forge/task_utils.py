@@ -34,31 +34,45 @@ class TaskExecutor:
         kwargs['current_task_name'] = self.task_name
         self.task_run.status = 'in_progress'
         accepts_kwargs = self.function_accepts_kwargs(self.function)
-        
-        try:
-            if accepts_kwargs:
-                filtered_kwargs = kwargs
-                kwargs['flow_name'] = self.flow_name
-                kwargs['task_name'] = self.task_name
-                
-            else:
-                filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)
+
+        if accepts_kwargs:
+            filtered_kwargs = kwargs
+            kwargs['flow_name'] = self.flow_name
+            kwargs['task_name'] = self.task_name
             
-            if settings.DEBUG:
+        else:
+            filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)
+
+        if settings.DEBUG:
+            
+            try:
                 self.debug_executor.debug_mode(self, **filtered_kwargs)
+            
+            finally:
+                # Log any exception that occurred during task execution
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                logging.info(f"exc_type: {exc_type}")
+                if exc_type is not None:
+                    traceback_str = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+                    logging.error(f"An exception occurred during task execution:\n{traceback_str}")
+                    # Pass the exception to failed_task_output
+                    self.failed_task_output(traceback_str, **kwargs)
+        
+        else:
 
-            else:
+            try:
                 self.task_output = self.function(**filtered_kwargs)
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+            
+            except Exception as e:
 
-        finally:
-            # Log any exception that occurred during task execution
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            if exc_type is not None:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                logging.info(f"exc_type: {exc_type}")
                 traceback_str = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
                 logging.error(f"An exception occurred during task execution:\n{traceback_str}")
                 # Pass the exception to failed_task_output
                 self.failed_task_output(traceback_str, **kwargs)
-            
+
         return
 
     def task_is_ready_for_close(self, **kwargs):
