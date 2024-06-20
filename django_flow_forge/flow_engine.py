@@ -319,7 +319,7 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
                 flow_run.save()
                 break
 
-        # Optional: Implement a more sophisticated mechanism to avoid tight looping
+        # Optional: Implement a more sophisticated mechanism to avoid unnecessarily impatient looping
         time.sleep(1)
         counter += 1
 

@@ -114,7 +114,10 @@ class TaskExecutor:
     def executed_task_output(self,):
 
         logging.info(f"Task {self.task_name} executed successfully.")
-        self.task_run.output=self.task_output
+        if hasattr(self, 'task_output'):
+            self.task_run.output = self.task_output
+        else:
+            self.task_run.output=None
         self.task_run.task_complete = True
         self.task_run.end_time = timezone.now()
         self.task_run.status = 'complete'
