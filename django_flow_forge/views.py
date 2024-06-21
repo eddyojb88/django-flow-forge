@@ -166,6 +166,8 @@ def _search_posts(request):
         query |= Q(meta__icontains=search)
 
         posts = posts.filter(query)
+    
+    posts = posts.order_by('-start_time')
 
     paginator = Paginator(posts, POSTS_PER_PAGE)
     try:

@@ -67,6 +67,10 @@ class ExecutedFlow(models.Model):
     params = models.JSONField(default=dict, null=True, blank=True)
     meta = models.JSONField(default=dict, null=True, blank=True)
 
+    class Meta:
+        ordering = ['-start_time']  # This ensures the default ordering is by start_time in descending order
+
+
     def __str__(self):
         if self.flow:
             return f"Run of {self.flow.flow_name} on {self.start_time}. Completed: {self.flow_complete}"
