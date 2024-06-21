@@ -168,14 +168,15 @@ def update_task_run_node_info(request):
 
             if models.ExecutedTask.objects.filter(task_snapshot_id=node_id, flow_run_id=executed_flow_id).exists():
 
-                executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, flow_run=executed_flow)
+                executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, flow_run_id=executed_flow_id)
                 executed_task_summary = {}
                 executed_task_summary['Task Status'] = executed_task.status
                 executed_task_summary['Start Time'] = executed_task.start_time
                 executed_task_summary['End Time'] = executed_task.end_time
 
                 if executed_task.status == 'failed':
-                    executed_task_summary['Exception'] = executed_task.exceptions
+                    executed_task_summary['Exception'] = executed_task.exceptions['main_run']
+                    context['code_in_response'] = True
 
                 else:    
                     executed_task_summary['Output'] = executed_task.output
@@ -183,7 +184,7 @@ def update_task_run_node_info(request):
                 context['executed_task_summary'] = executed_task_summary
 
                 ''' Check if any machine learning experiments associated with node'''
-                ml_results = models.MLResult.objects.filter(executed_flow=executed_flow)
+                ml_results = models.MLResult.objects.filter(executed_flow_id=executed_flow_id)
                 context['ml_result_count'] = len(ml_results)
                 context['ml_results'] = ml_results
 

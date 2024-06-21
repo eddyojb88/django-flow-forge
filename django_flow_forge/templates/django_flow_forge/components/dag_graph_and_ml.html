@@ -8,7 +8,7 @@
         hx-trigger="tap from:#data-div1" 
         hx-target="#node-output"
         hx-swap="innerHTML"
-        hx-include="[name='current_flow_option']"
+        hx-include="[name='current_executed_flow_option']"
         hx-vals='js:{clicked_node_id: event.detail["clicked_node_id"]}'>
     </div>
 
@@ -19,8 +19,10 @@
 
     <div id="node-output" class="text-light col-lg-6"></div>
 
-    <div id ='ml-col' class="col-lg-12">
-        {% include 'django_flow_forge/components/ml_results_container.html' %}
-    </div>
+    {% if ml_result_count > 0 %}
+        <div id="ml-col" class="col-lg-12">
+            {% include 'django_flow_forge/components/ml_results_container.html' %}
+        </div>
+    {% endif %}
 
 </div>

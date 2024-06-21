@@ -205,13 +205,15 @@ def resolve_dependencies_get_task_order(flow_name):
 def task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
 
     try:
-        if kwargs.get('ignore_task_dependencies'):
-            if (executor.task_run.status == 'pending'):
+        if settings.DEBUG and kwargs.get('ignore_task_deps_in_debug_mode'):
+            if (executor.task_run.status == 'pending') and any(executors[dep].task_run.status == 'failed' for dep in executor.depends_on):
+                return False
+            elif (executor.task_run.status == 'pending'):
                 return True
         
         elif (executor.task_run.status == 'pending') and all(executors[dep].task_run.status == 'complete' for dep in executor.depends_on):
             return True
-        
+
     except KeyError as ke:
         closing_flow_process(flow_run, flow_complete=False, status='failed')
         raise Exception(f'You may have a dependency issue in your flow for task {task_name}')
@@ -261,6 +263,7 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
     flow_snapshot['graph'] = get_cytoscape_nodes_and_edges(all_task_objs, show_nested=True)
     flow_snapshot['flow_name'] = flow_name
     flow_run.flow_snapshot = flow_snapshot
+    flow_run.failed_tasks = []
     if kwargs.get('flow_metadata'):
         flow_run.meta = kwargs.get('flow_metadata')
     flow_run.save()
@@ -280,6 +283,8 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
         executor.debug_executor = debug_executor
         executors[task_name] = executor
 
+
+    '''Run the tasks using the list of executors'''
     counter = 0
     
     while any(executor.task_run.status != 'complete' for executor in executors.values()):
@@ -288,7 +293,7 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
 
             executor = executors[task_name]
 
-            ''' If all dependencies are met, execute the task '''
+            ''' If all dependencies are met, execute the task. Else if all remaining tasks have dependencies that have failed, end flow '''
             if task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
 
                 executor.submit_task(**kwargs)
@@ -301,6 +306,7 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
 
                     executor.task_post_process()
             
+            # Additional Checks when in async mode
             elif executor.task_run.status == 'in_progress':
                 
                 # Else if task is in progress then check status and collect data #
@@ -319,6 +325,11 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
                 flow_run.save()
                 break
 
+        # Break the while loop if remaining tasks depend on tasks that have failed:
+        flow_can_still_run = check_remaining_tasks_to_close_flow_run(flow_run, executors, **kwargs)
+        if not flow_can_still_run:
+            break
+        
         # Optional: Implement a more sophisticated mechanism to avoid unnecessarily impatient looping
         time.sleep(1)
         counter += 1
@@ -328,8 +339,8 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
         logging.info(f"Flow {flow_name} completed successfully.")
 
     else:
-        closing_flow_process(flow_run, flow_complete=False,)
-        logging.error(f"Flow {flow_name} failed due to task error.")
+        closing_flow_process(flow_run, flow_complete=False, status='incomplete')
+        logging.error(f"Flow {flow_name} failed due to task error/s and dependency tree.")
 
     # Update the flow run status to 'complete' after successful execution of all tasks
     
@@ -343,9 +354,31 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
         batch.temp_data['executed_flows'] = executed
         batch.save(update_fields=['temp_data'])
 
-    logging.info(f"All tasks for flow {flow_name} completed successfully.")
+    logging.info(f"Work Flow: {flow_name} ended.")
 
     return
+
+def check_remaining_tasks_to_close_flow_run(flow_run, task_executors, **kwargs):
+
+    flow_can_still_run = False
+    # Get all remaining pending tasks
+
+    # For each pending task, get the dependencies and check whether or can run or not
+    for task_name in task_executors:
+        executor = task_executors[task_name]
+        failed_count = 0
+        dependency_count = len(executor.depends_on)
+        for dep in executor.depends_on:
+            if (task_executors[dep].task_run.status == 'failed'):
+                failed_count += 1
+        
+        # Set out conditions with which the flow can still run:
+        if dependency_count == 0 and executor.task_run.status == 'pending':
+            flow_can_still_run = True
+        elif failed_count == 0 and executor.task_run.status == 'pending':
+            flow_can_still_run = True
+
+    return flow_can_still_run
 
 def closing_flow_process(flow_run, flow_complete:bool, status=None,):
 

@@ -44,6 +44,7 @@
                         // case 'complete': return '#2ECC40'; // Green
                         case 'complete': return '#7bd17b'; 
                         case 'failed': return '#fa7b7b'; // Red
+                        case 'incomplete': return '#fa7b7b'; // Red
                         case 'pending': return '#fdf46d'; // Yellow
                         default: return '#0074D9'; // Default blue
                     }
@@ -61,6 +62,7 @@
 
             var nodeId = (typeof evt.target.id == 'function') ? evt.target.id() : ""
             var executedProcessId = "{{ current_executed_flow_id }}"; // Render Django variable into JS
+            console.log('Executed process id: ' + executedProcessId )
 
             // Trigger HTMX request upon clicking the node
             console.log('Sending click event to body with node id: ' + nodeId + ' and executedProcessID: ' + executedProcessId)

@@ -18,6 +18,8 @@ class TaskExecutor:
         self.task_name = task_name
         self.task_output_ready = False
         self.task_future = None
+        self.task_run = None
+        self.task_output = None
 
     def create_checkpoint(self,):
 
@@ -76,6 +78,7 @@ class TaskExecutor:
         return
 
     def task_is_ready_for_close(self, **kwargs):
+        '''This is a dummy method in sync mode but used for async tasks'''
         return True
 
     def task_post_process(self):
@@ -113,20 +116,22 @@ class TaskExecutor:
 
     def executed_task_output(self,):
 
-        logging.info(f"Task {self.task_name} executed successfully.")
-        if hasattr(self, 'task_output'):
-            self.task_run.output = self.task_output
+        logging.info(f"Task {self.task_name} has finished execution.")
+        if self.task_run.status == 'failed':
+            pass
+        
         else:
-            self.task_run.output=None
-        self.task_run.task_complete = True
-        self.task_run.end_time = timezone.now()
-        self.task_run.status = 'complete'
+            self.task_run.output = self.task_output
+            self.task_run.task_complete = True
+            self.task_run.end_time = timezone.now()
+            self.task_run.status = 'complete'
 
         ''' If task no longer exists, remove it'''
         if not FlowTask.objects.filter(id=self.task_run.task.id).exists():
             self.task_run.task = None
 
         self.task_run.save(update_fields=['status', 'end_time', 'task_complete', 'output'])
+
         return True
 
     def collect_and_store_output(self):
@@ -142,6 +147,8 @@ class TaskExecutor:
         self.task_run.status = 'failed'
         self.task_run.end_time = timezone.now()
         self.task_run.exceptions['main_run'] = str(e)
+        self.task_run.output = str(e)
+        self.task_run.flow_run.failed_tasks.append(self.task_name)
 
         ''' If task no longer exists, remove it'''
         if not FlowTask.objects.filter(id=self.task_run.task.id).exists():

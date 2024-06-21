@@ -4,7 +4,7 @@
 If you only want to run a small portion of the pipeline, you can comment out registered tasks of the flow.
 When you go to run the flow, you can insert the ```ignore_task_dependencies``` keyword:
 
-```run_flow('your_flow', ignore_task_dependencies=True, **kwargs)```
+```run_flow('your_flow', ignore_task_deps_in_debug_mode=True, **kwargs)```
 
 Warning: Be aware that this currently breaks the DAG in the visualisation tools as it doesn't yet handle missing dependencies.
 

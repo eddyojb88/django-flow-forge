@@ -1,7 +1,9 @@
+
 <div class="container node-info-container border rounded">
 
     <h2 class="header-line">Task Results</h1>
-
+        
+  
     <table class="table table-striped table-bordered table-dark table-hover table-sm">
         <thead>
             <tr>
@@ -13,9 +15,32 @@
             {% for key, value in executed_task_summary.items %}
             <tr>
                 <td>{{ key }}</td>
-                <td>{{ value }}</td>
+                {% if code_in_response %}
+                
+                    <td> <pre> <code class="language-python">{{ value }}</code></pre> </td>
+                {% else %}
+                    <td>{{ value }}</tr>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    
+    {% if code_in_response  %}
+
+        <style>
+            pre {
+                white-space: pre; /* Default behavior, does not wrap text */
+                overflow-x: auto; /* Allows horizontal scrolling */
+            }
+        </style>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/atom-one-dark.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+
+    {% endif %}
+
+
 </div>
