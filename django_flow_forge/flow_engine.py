@@ -254,9 +254,11 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
 
     if flow_batch_id:
         batch = FlowBatch.objects.get(id=flow_batch_id)
+        flow_run.flow_batch = batch
         if flow_name in batch.temp_data.get('executed_flows', []):
             print(f'''Not running flow "{flow_name}" Batch: f{batch.flow_batch_number} as it is flagged as already run''')
             return
+        
 
     flow_pipeline = flow_pipeline_lookup.get(flow_name)
     flow_snapshot = make_flow_snapshot(flow_pipeline, task_order)

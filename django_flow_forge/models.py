@@ -56,6 +56,7 @@ class ExecutedFlow(models.Model):
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     batch_handler = models.ForeignKey('BatchHandler', on_delete=models.CASCADE, related_name='executed_flows', null=True, blank=True)
+    flow_batch = models.ForeignKey('FlowBatch', on_delete=models.CASCADE, related_name='executed_flows', null=True, blank=True)  # Added field
     # executed_tasks = models.ManyToManyField(FlowTask, related_name='executed_tasks', blank=True)
     executed_by = models.CharField(null=True, blank=True, max_length=255)
     flow_complete = models.BooleanField(default=False)  # Indicates if the flow run is complete
@@ -107,6 +108,7 @@ class BatchHandler(models.Model):
 class FlowBatch(models.Model):
     batch_handler = models.ForeignKey(BatchHandler, on_delete=models.CASCADE, related_name='batch', null=True, blank=True)
     flow_batch_number = models.IntegerField(default=0, null=False, blank=False,)
+    # executed_flows = models.ForeignK
     temp_data = models.JSONField(null=True, default=dict, encoder=DjangoJSONEncoder)
 
 class MLResult(models.Model):
