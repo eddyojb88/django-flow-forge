@@ -94,62 +94,16 @@
             {% include 'django_flow_forge/components/task_summary_charts.html' %}
      
             <div class="row">
-                <h3 class="display-6 mt-5 text-light">Status Table</h3>
-                <hr class="title-hr mb-5">
 
-                <div class="col">
-                    <table class="table table-dark table-bordered rounded">
-                        <thead>
-                            <tr>
-                                <th scope="col">Work Flow Name</th>
-                                <th scope="col">Start Time</th>
-                                <th class='text-center narrow-col' scope="col">Status</th>
-                                <th class='text-center narrow-col' scope="col">Metadata</th>
-                                <th scope="col"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for flow in page_obj %}
-                            <tr class='align-middle' style="font-size: 0.8rem;">
-                                <td >{{ flow.flow_name_snapshot }}</td>
-                                <td>{{ flow.start_time }}</td>
-                                <td class="text-center">
-                                    <span class="badge {{ flow.status }} text-dark">{{ flow.get_status_display }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <span>{{ flow.meta|slice:":300" }}{% if flow.meta|length > 300 %}...{% endif %}</span>
+                <div class="col-md-6">
+                    <h3 class="display-6 mt-5 text-light">Status Table</h3>
+                    <hr class="title-hr mb-5">
+                </div>     
 
-                                </td>
-                                <td class="text-center">
-                                    <button name='executed_flow_option' value='{{ flow.id }}' class="btn btn-primary badge btn-sm" 
-                                    hx-get="{% url 'django-flow-forge:tasks_run_viz' %}" hx-target="#cytoscape-and_ml-outer-row" hx-swap="innerHTML">
-                                        <i class="fas fa-play"></i> Draw Graph
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
             </div>
-    
-            <!-- Pagination Links -->
-            <div class="pagination">
-                <span class="step-links">
-                    {% if page_obj.has_previous %}
-                        <a href="?page=1">&laquo; first</a>
-                        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                    {% endif %}
-        
-                    <span class="current text-light">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                    </span>
-        
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}">next</a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                    {% endif %}
-                </span>
+
+            <div class="row">
+                {% include 'django_flow_forge/components/executed_flow_table.html' %}
             </div>
 
         </div>

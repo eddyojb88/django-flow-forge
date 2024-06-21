@@ -1,0 +1,15 @@
+<div class="col-md-12 mb-3 d-flex justify-content-end"> 
+    <form 
+        class="centred ui form"
+        hx-get="{% url 'django-flow-forge:search_flow_runs' %}" 
+        hx-target="#search-results"
+        hx-trigger="submit, input delay:0.3s"
+        >
+    <input type="text" name="search" placeholder="Search..." value="{{ search }}">
+    </form>
+</div>
+<div class="col-md-12 mb-3"> 
+    <div id="search-results">
+        {% include 'django_flow_forge/components/table_search_results.html' %}
+    </div>
+</div>

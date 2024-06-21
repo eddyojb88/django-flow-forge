@@ -71,7 +71,6 @@ def register_task_flow(flow_name, pipeline, clear_existing_flow_in_db=True, **kw
     # Create or retrieve the specified flow, and optionally clear existing tasks
     flow, created = Flow.objects.get_or_create(flow_name=flow_name)
 
-    # Store the pipeline for reference
     global flow_pipeline_lookup
     flow_pipeline_lookup[flow_name] = pipeline
     
@@ -234,7 +233,7 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
     Initiates and executes a flow pipeline by name, handling task execution and flow status updates.
 
     Parameters:
-    - flow_name (str): The name of the xflow to be executed.
+    - flow_name (str): The name of the flow to be executed.
     - **kwargs: Additional keyword arguments that may be required for task execution.
 
     Notes:

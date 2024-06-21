@@ -5,15 +5,19 @@ from django.template.loader import render_to_string
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 import json
-from django.core.paginator import Paginator
-from django.db.models import Count
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Count, Q
+from datetime import datetime
 from django.db.models.functions import TruncDay
 from django.shortcuts import render
 import json
+import re
 import logging
 
 from django_flow_forge.task_utils import get_cytoscape_nodes_and_edges
 from django_flow_forge.authorization import user_has_permission
+
+POSTS_PER_PAGE = 12
 
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def conceptual_dag_viz(request,):
@@ -78,9 +82,19 @@ def update_conceptual_node_info(request):
         
     return HttpResponse("Request must be made via HTMX.", status=400)
 
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
+def search_flow_runs(request):
+    context = {}
+    if request.htmx:
+        context['searched_flows'], context['search'] = _search_posts(request)
+        return render(request, "django_flow_forge/components/table_search_results.html", context)
+        
+    return HttpResponse("Request must be made via HTMX.", status=400)
 
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def tasks_run_viz(request):
+
+    context = {}
 
     if request.htmx:
         flow_option = request.GET.get('executed_flow_option')
@@ -94,6 +108,8 @@ def tasks_run_viz(request):
     # Assuming FlowTask is your model and flow_name is a field in this model
     all_executed_flowes = models.ExecutedFlow.objects.all().order_by('-start_time')
     flow_ml_results = models.MLResult.objects.filter(executed_flow=executed_flow)
+    
+    context['searched_flows'], context['search'] = _search_posts(request)
 
     paginator = Paginator(all_executed_flowes, 10)  # Show 10 flowes per page
 
@@ -111,16 +127,15 @@ def tasks_run_viz(request):
 
     line_chart_data, pie_chart_data = summary_chart_view()
 
-    context = {
+    
         # 'plotly_fig': plot_div,  # The Plotly figure in HTML div format
-        'graph_json': graph_json_serialized,
-        'all_executed_flowes': all_executed_flowes,
-        'page_obj': page_obj,
-        'current_executed_flow_id': executed_flow.id,
-        'ml_results': flow_ml_results,
-        'line_chart_data': line_chart_data,
-        'pie_chart_data': pie_chart_data,
-    }
+    context['graph_json'] = graph_json_serialized
+    context['all_executed_flows'] = all_executed_flowes
+    context['page_obj'] = page_obj
+    context['current_executed_flow_id'] = executed_flow.id
+    context['ml_results'] = flow_ml_results
+    context['line_chart_data'] = line_chart_data
+    context['pie_chart_data'] = pie_chart_data
 
     if request.htmx:
 
@@ -129,6 +144,38 @@ def tasks_run_viz(request):
         return HttpResponse(html)
 
     return render(request, 'django_flow_forge/dag_tasks_run.html', context=context)
+
+def _search_posts(request):
+    search = request.GET.get("search")
+    page = request.GET.get("page")
+    posts = models.ExecutedFlow.objects.all()
+
+    if search:
+        query = Q()
+
+        # General search for flow_name
+        query |= Q(flow_name_snapshot__icontains=search)
+
+        # Check if the search term matches a date format (month-year)
+        date_match = re.match(r"(\d{4})-(\d{2})", search)
+        if date_match:
+            year, month = date_match.groups()
+            query |= Q(start_time__year=year, start_time__month=month)
+        
+        # Search within the JSONField `meta` for a specific label
+        query |= Q(meta__icontains=search)
+
+        posts = posts.filter(query)
+
+    paginator = Paginator(posts, POSTS_PER_PAGE)
+    try:
+        posts = paginator.page(page)
+    except PageNotAnInteger:
+        posts = paginator.page(1)
+    except EmptyPage:
+        posts = paginator.page(paginator.num_pages)
+
+    return posts, search or ""
 
 def summary_chart_view():
     # Aggregate tasks by day
