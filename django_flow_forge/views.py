@@ -151,21 +151,27 @@ def _search_posts(request):
     posts = models.ExecutedFlow.objects.all()
 
     if search:
-        query = Q()
+        tokens = search.split()
+        combined_query = Q()
 
-        # General search for flow_name
-        query |= Q(flow_name_snapshot__icontains=search)
+        for token in tokens:
+            token_query = Q()
 
-        # Check if the search term matches a date format (month-year)
-        date_match = re.match(r"(\d{4})-(\d{2})", search)
-        if date_match:
-            year, month = date_match.groups()
-            query |= Q(start_time__year=year, start_time__month=month)
-        
-        # Search within the JSONField `meta` for a specific label
-        query |= Q(meta__icontains=search)
+            # General search for flow_name
+            token_query |= Q(flow_name_snapshot__icontains=token)
 
-        posts = posts.filter(query)
+            # Check if the token matches a date format (month-year)
+            date_match = re.match(r"(\d{4})-(\d{2})", token)
+            if date_match:
+                year, month = date_match.groups()
+                token_query |= Q(start_time__year=year, start_time__month=month)
+
+            # Search within the JSONField `meta` for a specific label
+            token_query |= Q(meta__icontains=token)
+
+            combined_query &= token_query
+
+        posts = posts.filter(combined_query)
     
     posts = posts.order_by('-start_time')
 

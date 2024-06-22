@@ -239,11 +239,20 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
     Notes:
     - It was decided not to use a TaskRun Object to store all details and methods of a Task Executor object - this may or may not have been an optimal decision
     '''
-
+        
     try:
         # Attempt to fetch the flow definition and create a flow run instance
         flow = Flow.objects.get(flow_name=flow_name)
-        flow_run = ExecutedFlow.objects.create(flow=flow, flow_id_snapshot=flow.id, flow_name_snapshot=flow.flow_name) 
+        flow_run = ExecutedFlow(flow=flow, flow_id_snapshot=flow.id, flow_name_snapshot=flow.flow_name)
+
+        if flow_batch_id:
+            batch = FlowBatch.objects.get(id=flow_batch_id)
+            flow_run.flow_batch = batch
+            if flow_name in batch.temp_data.get('executed_flows', []):
+                print(f'''Not running flow "{flow_name}" Batch: f{batch.flow_batch_number} as it is flagged as already run''')
+                return
+
+        flow_run.save()
         # Resolve task dependencies and determine the execution order
         all_task_objs, task_order = resolve_dependencies_get_task_order(flow_name)
         
@@ -251,13 +260,6 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
         logging.error(f"Failed to initiate flow run for {flow_name}: {e}")
         raise Exception('You may not have imported the pipeline in to the program, have spelt the flow wrong or are referring to a pipeline that no longer exists.')
 
-    if flow_batch_id:
-        batch = FlowBatch.objects.get(id=flow_batch_id)
-        flow_run.flow_batch = batch
-        if flow_name in batch.temp_data.get('executed_flows', []):
-            print(f'''Not running flow "{flow_name}" Batch: f{batch.flow_batch_number} as it is flagged as already run''')
-            return
-        
 
     flow_pipeline = flow_pipeline_lookup.get(flow_name)
     flow_snapshot = make_flow_snapshot(flow_pipeline, task_order)
@@ -301,12 +303,6 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
 
                 executor.create_checkpoint()
 
-                if executor.task_is_ready_for_close():
-                    # collect output
-                    executor.collect_and_store_output()
-
-                    executor.task_post_process()
-            
             # Additional Checks when in async mode
             elif executor.task_run.status == 'in_progress':
                 
@@ -314,17 +310,19 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
                 if counter % 1000 == 0:
                     executor.create_checkpoint()
         
-                if executor.task_is_ready_for_close():
-                    # collect output
-                    executor.collect_and_store_output()
-
-                    executor.task_post_process()
 
             elif executor.task_run.status == 'failed':
                 flow_run.status = 'failed'
                 post_flow_graph_to_add_status(flow_run)
                 flow_run.save()
                 break
+
+            if executor.task_is_ready_for_close():
+                # collect output
+                executor.collect_and_store_output()
+
+                executor.task_post_process()
+            
 
         # Break the while loop if remaining tasks depend on tasks that have failed:
         flow_can_still_run = check_remaining_tasks_to_close_flow_run(flow_run, executors, **kwargs)
