@@ -121,15 +121,19 @@ def tasks_run_viz(request):
 
     # if not show_nested:
     # executed_tasks = executed_tasks.filter(nested=False)
+    try:
+        graph_json = executed_flow.flow_snapshot['graph']
+        graph_json_serialized = json.dumps(graph_json, cls=DjangoJSONEncoder)
+        context['graph_json'] = graph_json_serialized
 
-    graph_json = executed_flow.flow_snapshot['graph']
-    graph_json_serialized = json.dumps(graph_json, cls=DjangoJSONEncoder)
+    except Exception as e:
+        pass
 
     line_chart_data, pie_chart_data = summary_chart_view()
 
     
         # 'plotly_fig': plot_div,  # The Plotly figure in HTML div format
-    context['graph_json'] = graph_json_serialized
+    
     context['all_executed_flows'] = all_executed_flowes
     context['page_obj'] = page_obj
     context['current_executed_flow_id'] = executed_flow.id
@@ -212,44 +216,42 @@ def summary_chart_view():
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def update_task_run_node_info(request):
 
-    if request.htmx:
+    if not request.htmx:
+        return HttpResponse("Request must be made via HTMX.", status=400)
+    
+    node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
+    executed_flow_id = request.GET.get('current_executed_flow_option', None)
 
-        node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
-        executed_flow_id = request.GET.get('current_executed_flow_option', None)
+    context = {}
 
-        context = {}
+    if not node_id:
+        return HttpResponse("Bad request.", status=400)
 
-        if node_id:
+    if not models.ExecutedTask.objects.filter(task_snapshot_id=node_id, flow_run_id=executed_flow_id).exists():
+        return HttpResponse("Bad request.", status=400)
 
-            if models.ExecutedTask.objects.filter(task_snapshot_id=node_id, flow_run_id=executed_flow_id).exists():
+    executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, flow_run_id=executed_flow_id)
+    executed_task_summary = {}
+    executed_task_summary['Task Status'] = executed_task.status
+    executed_task_summary['Start Time'] = executed_task.start_time
+    executed_task_summary['End Time'] = executed_task.end_time
 
-                executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, flow_run_id=executed_flow_id)
-                executed_task_summary = {}
-                executed_task_summary['Task Status'] = executed_task.status
-                executed_task_summary['Start Time'] = executed_task.start_time
-                executed_task_summary['End Time'] = executed_task.end_time
+    if executed_task.status == 'failed':
+        executed_task_summary['Exception'] = executed_task.exceptions['main_run']
+        context['code_in_response'] = True
 
-                if executed_task.status == 'failed':
-                    executed_task_summary['Exception'] = executed_task.exceptions['main_run']
-                    context['code_in_response'] = True
+    else:    
+        executed_task_summary['Output'] = executed_task.output
+    
+    context['executed_task_summary'] = executed_task_summary
 
-                else:    
-                    executed_task_summary['Output'] = executed_task.output
-                
-                context['executed_task_summary'] = executed_task_summary
+    ''' Check if any machine learning experiments associated with node'''
+    ml_results = models.MLResult.objects.filter(executed_flow_id=executed_flow_id)
+    context['ml_result_count'] = len(ml_results)
+    context['ml_results'] = ml_results
 
-                ''' Check if any machine learning experiments associated with node'''
-                ml_results = models.MLResult.objects.filter(executed_flow_id=executed_flow_id)
-                context['ml_result_count'] = len(ml_results)
-                context['ml_results'] = ml_results
-
-            else:
-                logging.warning('No object found for this flow task.')
-
-
-            return render(request, 'django_flow_forge/components/clicked_executed_task_node_info.html', context)
+    return render(request, 'django_flow_forge/components/clicked_executed_task_node_info.html', context)
         
-    return HttpResponse("Request must be made via HTMX.", status=400)
 
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def display_ml_results_table(request):

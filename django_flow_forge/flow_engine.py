@@ -204,8 +204,9 @@ def resolve_dependencies_get_task_order(flow_name):
 def task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
 
     try:
+        ''' If we dont care about fulfilling task depencies in debug mode then go ahead and run '''
         if settings.DEBUG and kwargs.get('ignore_task_deps_in_debug_mode'):
-            if (executor.task_run.status == 'pending') and any(executors[dep].task_run.status == 'failed' for dep in executor.depends_on):
+            if (executor.task_run.status == 'pending') and any(executors[dep].task_run.status == 'failed' for dep in executor.depends_on if dep in executors):
                 return False
             elif (executor.task_run.status == 'pending'):
                 return True
