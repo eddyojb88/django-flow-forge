@@ -232,6 +232,11 @@ def update_task_run_node_info(request):
 
     executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, flow_run_id=executed_flow_id)
     executed_task_summary = {}
+    if not executed_task.task:
+        executed_task_summary['task_name'] = executed_task.task_snapshot['task_name']
+    else:
+        executed_task_summary['task_name'] = executed_task.task.task_name 
+
     executed_task_summary['Task Status'] = executed_task.status
     executed_task_summary['Start Time'] = executed_task.start_time
     executed_task_summary['End Time'] = executed_task.end_time

@@ -78,39 +78,42 @@ def register_task_flow(flow_name, pipeline, clear_existing_flow_in_db=True, **kw
         # If requested, delete all existing tasks for this flow to start fresh
         flow_tasks = FlowTask.objects.filter(flow=flow)
         flow_tasks.delete()
+
+    def register_tasks_recursively(tasks, parent_flow, nested=False):
+        """
+        Recursively registers or updates tasks, including handling nested tasks.
+
+        This internal function flowes each task in the provided task structure, registering them with the parent flow. It handles the creation or update of tasks, setting up their dependencies, and recursively flowes any nested tasks.
+
+        Parameters:
+        - tasks (dict): A dictionary of tasks to flow, where each key is a task name and each value is a task detail dictionary.
+        - parent_flow (Flow): The flow object to which these tasks belong.
+        - nested (bool): Indicates if the current tasks are nested within another task.
+        """
+        for task_name in tasks:
+            # Register each task and add it to the set of updated tasks
+            task = register_task(parent_flow, task_name, tasks[task_name], nested=nested)
+            updated_tasks.add(task.task_name)
+
+            # Flow any nested tasks
+            nested_tasks = tasks[task_name].get('nested_tasks', [])
+            
+            if not nested_tasks:
+                continue
+
+            # Ensure nested tasks depend on their parent task if not already set
+            for j in nested_tasks:
+                nested_task = nested_tasks[j]
+                if task.task_name in nested_task['depends_bidirectionally_with']:
+                    pass  # Dependency already exists
+                elif task.task_name not in nested_task['depends_on']:
+                    nested_task['depends_on'].append(task.task_name)
+            register_tasks_recursively(nested_tasks, parent_flow, nested=True)
     
     with transaction.atomic():
         # Retrieve existing tasks for the flow to identify which ones to update or delete
         existing_tasks = set(FlowTask.objects.filter(flow=flow).values_list('task_name', flat=True))
         updated_tasks = set()
-
-        def register_tasks_recursively(tasks, parent_flow, nested=False):
-            """
-            Recursively registers or updates tasks, including handling nested tasks.
-
-            This internal function flowes each task in the provided task structure, registering them with the parent flow. It handles the creation or update of tasks, setting up their dependencies, and recursively flowes any nested tasks.
-
-            Parameters:
-            - tasks (dict): A dictionary of tasks to flow, where each key is a task name and each value is a task detail dictionary.
-            - parent_flow (Flow): The flow object to which these tasks belong.
-            - nested (bool): Indicates if the current tasks are nested within another task.
-            """
-            for task_name in tasks:
-                # Register each task and add it to the set of updated tasks
-                task = register_task(parent_flow, task_name, tasks[task_name], nested=nested)
-                updated_tasks.add(task.task_name)
-
-                # Flow any nested tasks
-                nested_tasks = tasks[task_name].get('nested_tasks', [])
-                if nested_tasks:
-                    # Ensure nested tasks depend on their parent task if not already set
-                    for j in nested_tasks:
-                        nested_task = nested_tasks[j]
-                        if task.task_name in nested_task['depends_bidirectionally_with']:
-                            pass  # Dependency already exists
-                        elif task.task_name not in nested_task['depends_on']:
-                            nested_task['depends_on'].append(task.task_name)
-                    register_tasks_recursively(nested_tasks, parent_flow, nested=True)
 
         # Start the pipeline flowing with the initial set of tasks
         register_tasks_recursively(pipeline, flow)
@@ -214,6 +217,9 @@ def task_can_start_check(flow_run, task_name, executor, executors, **kwargs):
         elif (executor.task_run.status == 'pending') and all(executors[dep].task_run.status == 'complete' for dep in executor.depends_on):
             return True
 
+        elif (executor.task_run.status == 'pending') and any(executors[dep].task_run.status == 'failed' for dep in executor.depends_on):
+            executor.task_run.status = 'failed'
+            return False
     except KeyError as ke:
         closing_flow_process(flow_run, flow_complete=False, status='failed')
         raise Exception(f'You may have a dependency issue in your flow for task {task_name}')

@@ -127,7 +127,8 @@ class TaskExecutor:
             self.task_run.status = 'complete'
 
         ''' If task no longer exists, remove it'''
-        if not FlowTask.objects.filter(id=self.task_run.task.id).exists():
+
+        if self.task_run.task and not FlowTask.objects.filter(id=self.task_run.task.id).exists():
             self.task_run.task = None
 
         self.task_run.save(update_fields=['status', 'end_time', 'task_complete', 'output'])
