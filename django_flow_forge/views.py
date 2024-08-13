@@ -10,6 +10,8 @@ from django.db.models import Count, Q
 from datetime import datetime
 from django.db.models.functions import TruncDay
 from django.shortcuts import render
+from datetime import timedelta
+from django.utils import timezone
 import json
 import re
 import logging
@@ -200,12 +202,19 @@ def summary_chart_view():
     }
 
     # Aggregate status breakdown
-    status_breakdown = models.ExecutedFlow.objects.values('status').annotate(count=Count('status')).order_by('status')
+    status_breakdown = models.ExecutedFlow.objects.values('status', 'start_time').annotate(count=Count('status')).order_by('status')
+
     
     # Prepare data for the pie chart
+    # pie_chart_data = {
+        # 'labels': [entry['status'] for entry in status_breakdown],
+        # 'data': [entry['count'] for entry in status_breakdown],
+    # }
+
     pie_chart_data = {
-        'labels': [entry['status'] for entry in status_breakdown],
-        'data': [entry['count'] for entry in status_breakdown],
+        'labels': list(set([entry['status'] for entry in status_breakdown])),
+        'data': [{'status': entry['status'], 'count': entry['count'], 
+                  'start_time': entry['start_time'].strftime('%Y-%m-%d')} for entry in status_breakdown],
     }
 
     line_chart_data = json.dumps(line_chart_data, cls=DjangoJSONEncoder)

@@ -4,11 +4,21 @@
     }
 
 </style>
-
 <div class="row">
     <div class="col-12">
         <h5 class="display-6 text-light">Summary</h5>
-            <hr class="title-hr mb-5">
+        <hr class="title-hr mb-5">
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-9"></div>
+    <div class="col-md-3 d-flex justify-content-end mb-3">
+        <select id="timeFilter" class="form-select">
+            <option value="7d">Last 7 Days</option>
+            <option value="14d">Last 14 Days</option>
+            <option value="1m">Last 1 Month</option>
+            <option value="3m">Last 3 Months</option>
+        </select>
     </div>
 </div>
 <div class="row">
@@ -16,94 +26,123 @@
         <canvas class='pl-time-series' id="tasksByDayChart"></canvas>
     </div>
     <div class="col-lg-6">
-        <canvas class="pl-status-summary" id="statusBreakdownChart"></canvas>
+            <canvas class="pl-status-summary" id="statusBreakdownChart"></canvas>
     </div>
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const lineChartData = JSON.parse('{{ line_chart_data|safe }}');
         const pieChartData = JSON.parse('{{ pie_chart_data|safe }}');
-    
+
         const ctx1 = document.getElementById('tasksByDayChart').getContext('2d');
         const tasksByDayChart = new Chart(ctx1, {
-    type: 'line',
-    data: {
-        labels: lineChartData.labels,
-        datasets: [{
-            label: 'Processes Run by Day',
-            data: lineChartData.data,
-            fill: false,
-            borderColor: 'rgb(75, 192, 192)',
-            tension: 0.1
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true
+            type: 'line',
+            data: {
+                labels: lineChartData.labels,
+                datasets: [{
+                    label: 'Processes Run by Day',
+                    data: lineChartData.data,
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                interaction: {
+                    mode: 'x',
+                    intersect: false
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        position: 'nearest'
+                    }
+                },
+                hover: {
+                    mode: 'index',
+                    intersect: false
+                }
             }
-        },
-        interaction: {
-            mode: 'x',
-            intersect: false
-        },
-        plugins: {
-            tooltip: {
-                // Adjusted tooltip interaction settings
-                mode: 'index',
-                intersect: false,
-                position: 'nearest' // Ensures tooltip appears near the vertical position but aligned with x-axis data point
-            }
-        },
-        hover: {
-            mode: 'index',
-            intersect: false
-        }
-    }
-});
+        });
 
         const ctx2 = document.getElementById('statusBreakdownChart').getContext('2d');
         const statusBreakdownChart = new Chart(ctx2, {
-    type: 'bar', // Change the chart type to 'bar'
-    data: {
-        labels: pieChartData.labels,
-        datasets: [{
-            label: 'Task Status Breakdown',
-            data: pieChartData.data,
-            // Assign colors based on the task status
-            backgroundColor: pieChartData.labels.map(label => {
-                if (label === 'failed') return '#fa7b7b'; // Red
-                else if (label === 'pending') return '#fdf46d'; // Yellow
-                else if (label === 'complete') return '#a7fba7'; // Green
-                else return '#0074D9'; // Default color for unspecified labels
-            }),
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true
+            type: 'bar',
+            data: {
+                labels: pieChartData.labels,
+                datasets: [{
+                    label: 'Task Status Breakdown',
+                    data: [],
+                    backgroundColor: pieChartData.labels.map(label => {
+                        if (label === 'failed') return '#fa7b7b';
+                        else if (label === 'pending') return '#fdf46d';
+                        else if (label === 'complete') return '#a7fba7';
+                        else return '#0074D9';
+                    }),
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                interaction: {
+                    mode: 'x',
+                    intersect: false
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        position: 'nearest'
+                    }
+                },
+                hover: {
+                    mode: 'index',
+                    intersect: false
+                }
             }
-        },
-        interaction: {
-            mode: 'x',
-            intersect: false
-        },
-        plugins: {
-            tooltip: {
-                // Adjusted tooltip interaction settings
-                mode: 'index',
-                intersect: false,
-                position: 'nearest' // Ensures tooltip appears near the vertical position but aligned with x-axis data point
-            }
-        },
-        hover: {
-            mode: 'index',
-            intersect: false
+        });
+
+        function updateChartData(timeFilter) {
+            const now = new Date();
+            const timeRanges = {
+                '7d': 7,
+                '14d': 14,
+                '1m': 30,
+                '3m': 90
+            };
+            const filteredData = pieChartData.data.filter(entry => {
+                const entryDate = new Date(entry.start_time);
+                const timeDiff = (now - entryDate) / (1000 * 3600 * 24); // Difference in days
+                return timeDiff <= timeRanges[timeFilter];
+            });
+
+            const countsByStatus = pieChartData.labels.map(label => {
+                return filteredData.filter(entry => entry.status === label).reduce((sum, entry) => sum + entry.count, 0);
+            });
+
+            statusBreakdownChart.data.datasets[0].data = countsByStatus;
+            statusBreakdownChart.update();
         }
-    }
-});
+
+        // Event listener for the time filter
+        document.getElementById('timeFilter').addEventListener('change', function () {
+            const selectedFilter = this.value;
+            updateChartData(selectedFilter);
+        });
+
+        // Initialize with default filter (last 7 days)
+        updateChartData('7d');
     });
-    </script>
+</script>
