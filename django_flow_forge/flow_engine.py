@@ -299,6 +299,8 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
     
     while any(executor.task_run.status != 'complete' for executor in executors.values()):
 
+        flow_can_still_run = True
+
         for task_name in executors:
 
             executor = executors[task_name]
@@ -322,9 +324,11 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
                 flow_run.status = 'failed'
                 post_flow_graph_to_add_status(flow_run)
                 flow_run.save()
-                break
+                flow_can_still_run = check_remaining_tasks_to_close_flow_run(flow_run, executors, **kwargs)
+                if not flow_can_still_run:
+                    break
 
-            if executor.task_is_ready_for_close():
+            if flow_can_still_run and executor.task_run.status != 'failed' and executor.task_is_ready_for_close():
                 # collect output
                 executor.collect_and_store_output()
 
@@ -332,7 +336,7 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
             
 
         # Break the while loop if remaining tasks depend on tasks that have failed:
-        flow_can_still_run = check_remaining_tasks_to_close_flow_run(flow_run, executors, **kwargs)
+        # flow_can_still_run = check_remaining_tasks_to_close_flow_run(flow_run, executors, **kwargs)
         if not flow_can_still_run:
             break
         
@@ -365,24 +369,37 @@ def run_flow(flow_name, debug_executor=DebugExecutor(), flow_batch_id=None, **kw
     return
 
 def check_remaining_tasks_to_close_flow_run(flow_run, task_executors, **kwargs):
+    '''Recursively check dependency tree to see if any other tasks should run'''
 
-    flow_can_still_run = False
-    # Get all remaining pending tasks
-
-    # For each pending task, get the dependencies and check whether or can run or not
-    for task_name in task_executors:
+    def count_failed_dependencies(task_name):
+        """Recursively count failed dependencies for a given task."""
         executor = task_executors[task_name]
         failed_count = 0
-        dependency_count = len(executor.depends_on)
-        for dep in executor.depends_on:
-            if (task_executors[dep].task_run.status == 'failed'):
-                failed_count += 1
         
-        # Set out conditions with which the flow can still run:
-        if dependency_count == 0 and executor.task_run.status == 'pending':
-            flow_can_still_run = True
-        elif failed_count == 0 and executor.task_run.status == 'pending':
-            flow_can_still_run = True
+        for dep in executor.depends_on:
+            # If the dependency has failed, increment the failed count
+            if task_executors[dep].task_run.status == 'failed':
+                failed_count += 1
+            # Recursively check the dependencies of the dependency
+            failed_count += count_failed_dependencies(dep)
+        
+        return failed_count
+
+    flow_can_still_run = False
+    
+    # Check all tasks in the flow
+    for task_name in task_executors:
+        executor = task_executors[task_name]
+        
+        if executor.task_run.status == 'pending':
+            failed_count = count_failed_dependencies(task_name)
+            dependency_count = len(executor.depends_on)
+            
+            # Set conditions under which the flow can still run:
+            if dependency_count == 0 and executor.task_run.status == 'pending':
+                flow_can_still_run = True
+            elif failed_count == 0 and executor.task_run.status == 'pending':
+                flow_can_still_run = True
 
     return flow_can_still_run
 
