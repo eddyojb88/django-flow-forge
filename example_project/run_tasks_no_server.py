@@ -15,5 +15,5 @@ if __name__ == '__main__':
     kwargs = {}
 
     run_flow('pipeline_ml_with_grid_search', **kwargs)
-    run_flow('pipeline_in_parallel_with_celery',  use_celery=True, **kwargs)
+    # run_flow('pipeline_in_parallel_with_celery',  use_celery=True, **kwargs)
     

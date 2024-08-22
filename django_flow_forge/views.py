@@ -140,6 +140,7 @@ def tasks_run_viz(request):
     context['page_obj'] = page_obj
     context['current_executed_flow_id'] = executed_flow.id
     context['ml_results'] = flow_ml_results
+    context['ml_results_count'] = len(flow_ml_results)
     context['line_chart_data'] = line_chart_data
     context['pie_chart_data'] = pie_chart_data
 
@@ -266,7 +267,6 @@ def update_task_run_node_info(request):
 
     return render(request, 'django_flow_forge/components/clicked_executed_task_node_info.html', context)
         
-
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def display_ml_results_table(request):
 
@@ -290,7 +290,7 @@ def fetch_ml_viz_data(request):
     executed_flow_id = request.GET.get('current_executed_flow_id')
     ml_result_id = request.GET.get('ml_result_option')
     ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_flow__id=executed_flow_id)
-    metrics = ml_result.metrics
+    metrics = ml_result.evaluation_metrics
     charts = {}
 
     # Add metrics to the charts dict if they exist in your MLResult metrics

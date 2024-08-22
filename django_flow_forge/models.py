@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.serializers.json import DjangoJSONEncoder
+import joblib
+from io import BytesIO
 
 class Flow(models.Model):
 
@@ -122,10 +124,35 @@ class MLResult(models.Model):
     dataset = models.CharField(null=True, blank=True, max_length=255)
     algorithm = models.CharField(null=True, blank=True, max_length=255)
     parameters = models.JSONField(default=dict)  # Parameters used for this particular run
-    metrics = models.JSONField(default=dict)  # Results/metrics from the experiment
+    evaluation_metrics = models.JSONField(default=dict, null=True, blank=True)  # Results/metrics from the experiment
+    # feature_importances = models.JSONField(default=dict, null=True, blank=True)  # Results/metrics from the experiment
     result_file_path = models.CharField(max_length=255, blank=True)  # Path to any result file
     created_at = models.DateTimeField(auto_now_add=True)
-    notes = models.TextField(blank=True)  # Any additional notes about the experiment
+    metadata = models.JSONField(default=dict, null=True, blank=True)  # Any additiona metadata you want to store
 
     def __str__(self):
         return f"{self.algorithm} - Experiment Desc.:{self.experiment} - {self.created_at.strftime('%Y-%m-%d')}"
+
+class MLModel(models.Model):
+    '''Optional model to store an ML model to DB. This should only be used for relatively small models, not GB big models.'''
+    ml_result = models.OneToOneField('MLResult', on_delete=models.CASCADE, related_name='ml_model')
+    model_data = models.BinaryField(null=True, blank=True)  # Field to store the serialized model
+
+    def save_model(self, model):
+        """Serialize and save the model in the BinaryField."""
+        model_io = BytesIO()
+        joblib.dump(model, model_io)
+        model_io.seek(0)
+        self.model_data = model_io.read()
+        self.save()
+
+    def load_model(self):
+        """Load the model from the BinaryField."""
+        if self.model_data:
+            model_io = BytesIO(self.model_data)
+            model_io.seek(0)
+            return joblib.load(model_io)
+        return None
+
+    def __str__(self):
+        return f"Model for {self.ml_result.algorithm} - {self.ml_result.experiment}"

@@ -3,7 +3,6 @@
     <!-- <h1 class="text-light"> Debug: {{ current_executed_flow_id }} </h1> -->
 
     <table class="table table-striped table-bordered table-dark table-hover table-sm">
-
         <thead>
             <tr>
                 <th>Attribute</th>
@@ -23,14 +22,24 @@
                 <td>Dataset</td>
                 <td>{{ ml_result.dataset }}</td>
             </tr>
-
             <tr>
                 <td>Parameters</td>
                 <td><pre>{{ ml_result.parameters|safe }}</pre></td>
             </tr>
             <tr>
                 <td>Metrics</td>
-                <td><pre>{{ ml_result.metrics|safe }}</pre></td>
+                <td>
+                    <table class="table table-sm table-dark">
+                        <tbody>
+                            {% for key, value in ml_result.evaluation_metrics.items %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td>{{ value }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
             </tr>
             <tr>
                 <td>Model File Location</td>
@@ -46,6 +55,7 @@
             </tr>
         </tbody>
     </table>
+    
 
 
 </div>

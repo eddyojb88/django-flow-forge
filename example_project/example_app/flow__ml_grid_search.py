@@ -10,19 +10,10 @@ from sklearn.datasets import make_classification
 import xgboost as xgb
 
 # Fetch data function
-def fetch_data1():
-    # Generating synthetic data for classification
-    X, y = make_classification(n_samples=1000, n_features=10, n_classes=2, random_state=42)
-    return X, y
-
-# Fetch data function
-def fetch_data2():
+def fetch_data():
     # Additional data fetching flow
-    fetch_data_nested_1()
-    fetch_data_nested_2()
-    # In a real-world scenario, this could be fetching data from another source
-    # Here, we'll just generate some dummy data
-    return 'additional_data'
+    X = 'some data'
+    return X
 
 def fetch_data_nested_1():
     return 'nested_data1'
@@ -122,8 +113,8 @@ def register_pipelines():
         flow_name='pipeline_ml_with_grid_search', 
         clear_existing_flow_in_db=True,
         pipeline = {
-                    'fetch_data2': {'function': fetch_data2, 'depends_on': []},
-                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data2']},
+                    'fetch_data': {'function': fetch_data, 'depends_on': []},
+                    'clean_data': {'function': clean_data, 'depends_on': ['fetch_data']},
                     'analyze_data': {'function': analyze_data, 'depends_on': ['clean_data']},
                     'grid_search_multiple_models': {'function': grid_search_multiple_models, 'depends_on': ['analyze_data']},
                    }
