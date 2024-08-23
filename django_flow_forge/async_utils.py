@@ -49,7 +49,7 @@ class CeleryTaskExecutor(TaskExecutor, AsyncTaskExecutor):
             filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)
         
         if settings.DEBUG:
-            self.debug_mode(**filtered_kwargs)
+            self.debug_executor.debug_mode(self, **filtered_kwargs)
         else:
             self.task_future = self.function.delay(**filtered_kwargs)
 

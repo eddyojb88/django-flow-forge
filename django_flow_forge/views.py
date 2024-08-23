@@ -25,34 +25,33 @@ POSTS_PER_PAGE = 12
 def conceptual_dag_viz(request,):
 
     if request.htmx:
-        flow_option = request.GET.get('flow_option')
-        flow = models.Flow.objects.get(id=flow_option)
-        show_nested = switch_value_to_bool(request.GET.get('show_nested'))
+        pipeline_option = request.GET.get('pipeline_option')
+        pipeline = models.Pipeline.objects.get(id=pipeline_option)
         
     else:   
-        flow = models.Flow.objects.all()[0]
-        show_nested = False
+        from django_flow_forge.auto_register_pipelines import auto_register_pipelines
+        print('Auto discovering tasks from fresh')
+        auto_register_pipelines()
+        pipeline = models.Pipeline.objects.all()[0]
 
-    # Assuming FlowTask is your model and flow_name is a field in this model
-    all_flows = models.Flow.objects.all()
+    # Assuming PipelineTask is your model and pipeline_name is a field in this model
+    all_pipelines = models.Pipeline.objects.all()
 
-    # Fetch all FlowTask instances for a given flow_name
-    tasks = models.FlowTask.objects.filter(flow=flow,).prefetch_related('depends_on')
-    if not show_nested:
-        tasks = tasks.filter(nested=False)
+    # Fetch all PipelineTask instances for a given pipeline_name
+    tasks = models.PipelineTask.objects.filter(pipeline=pipeline,).prefetch_related('depends_on')
 
-    graph_json = get_cytoscape_nodes_and_edges(tasks, show_nested=show_nested)
+    graph_json = get_cytoscape_nodes_and_edges(tasks,)
     graph_json_serialized = json.dumps(graph_json, cls=DjangoJSONEncoder)
 
     context = {
         # 'plotly_fig': plot_div,  # The Plotly figure in HTML div format
         'graph_json': graph_json_serialized,
-        'all_flowes': all_flows,
-        'current_flow_id': flow.id,
+        'all_pipelines': all_pipelines,
+        'current_pipeline_id': pipeline.id,
     }
 
     if request.htmx:
-        context = {'graph_json': graph_json_serialized, 'current_flow_id': flow.id}
+        context = {'graph_json': graph_json_serialized, 'current_pipeline_id': pipeline.id}
         # Render a partial template with the new Cytoscape graph
         html = render_to_string('django_flow_forge/components/dag_cyto_conceptual_script.html', context=context )
         return HttpResponse(html)
@@ -65,19 +64,19 @@ def update_conceptual_node_info(request):
     if request.htmx:
 
         node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
-        flow_id = request.GET.get('executed_flow_option', None)
+        pipeline_id = request.GET.get('executed_pipeline_option', None)
         context = {}
         if node_id:
 
-            flow = models.Flow.objects.get(id=flow_id)
+            pipeline = models.Pipeline.objects.get(id=pipeline_id)
 
-            if models.FlowTask.objects.filter(id=node_id, flow=flow).exists():
+            if models.PipelineTask.objects.filter(id=node_id, pipeline=pipeline).exists():
 
-                task = models.FlowTask.objects.get(id=node_id, flow=flow)
+                task = models.PipelineTask.objects.get(id=node_id, pipeline=pipeline)
                 context['task'] = task
 
             else:
-                logging.warning('No object found for this flow task.')
+                logging.warning('No object found for this pipeline task.')
 
 
             return render(request, 'django_flow_forge/components/clicked_concept_node_info.html', context)
@@ -85,10 +84,10 @@ def update_conceptual_node_info(request):
     return HttpResponse("Request must be made via HTMX.", status=400)
 
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
-def search_flow_runs(request):
+def search_pipeline_runs(request):
     context = {}
     if request.htmx:
-        context['searched_flows'], context['search'] = _search_posts(request)
+        context['searched_pipelines'], context['search'] = _search_posts(request)
         return render(request, "django_flow_forge/components/table_search_results.html", context)
         
     return HttpResponse("Request must be made via HTMX.", status=400)
@@ -99,32 +98,32 @@ def tasks_run_viz(request):
     context = {}
 
     if request.htmx:
-        flow_option = request.GET.get('executed_flow_option')
-        executed_flow = models.ExecutedFlow.objects.get(id=flow_option)
+        pipeline_option = request.GET.get('executed_pipeline_option')
+        executed_pipeline = models.ExecutedPipeline.objects.get(id=pipeline_option)
         # show_nested = switch_value_to_bool(request.GET.get('show_nested'))
         
     else:   
-        executed_flow = models.ExecutedFlow.objects.all().order_by('-start_time')[0]
+        executed_pipeline = models.ExecutedPipeline.objects.all().order_by('-start_time')[0]
         # show_nested = False
 
-    # Assuming FlowTask is your model and flow_name is a field in this model
-    all_executed_flowes = models.ExecutedFlow.objects.all().order_by('-start_time')
-    flow_ml_results = models.MLResult.objects.filter(executed_flow=executed_flow)
+    # Assuming PipelineTask is your model and pipeline_name is a field in this model
+    all_executed_pipelines = models.ExecutedPipeline.objects.all().order_by('-start_time')
+    pipeline_ml_results = models.MLResult.objects.filter(executed_pipeline=executed_pipeline)
     
-    context['searched_flows'], context['search'] = _search_posts(request)
+    context['searched_pipelines'], context['search'] = _search_posts(request)
 
-    paginator = Paginator(all_executed_flowes, 10)  # Show 10 flowes per page
+    paginator = Paginator(all_executed_pipelines, 10)  # Show 10 pipelinees per page
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Fetch all FlowTask instances for a given flow_name
-    # executed_tasks = models.ExecutedTask.objects.filter(flow_run=flow,)
+    # Fetch all PipelineTask instances for a given pipeline_name
+    # executed_tasks = models.ExecutedTask.objects.filter(pipeline_run=pipeline,)
 
     # if not show_nested:
     # executed_tasks = executed_tasks.filter(nested=False)
     try:
-        graph_json = executed_flow.flow_snapshot['graph']
+        graph_json = executed_pipeline.pipeline_snapshot['graph']
         graph_json_serialized = json.dumps(graph_json, cls=DjangoJSONEncoder)
         context['graph_json'] = graph_json_serialized
 
@@ -136,11 +135,11 @@ def tasks_run_viz(request):
     
         # 'plotly_fig': plot_div,  # The Plotly figure in HTML div format
     
-    context['all_executed_flows'] = all_executed_flowes
+    context['all_executed_pipelines'] = all_executed_pipelines
     context['page_obj'] = page_obj
-    context['current_executed_flow_id'] = executed_flow.id
-    context['ml_results'] = flow_ml_results
-    context['ml_results_count'] = len(flow_ml_results)
+    context['current_executed_pipeline_id'] = executed_pipeline.id
+    context['ml_results'] = pipeline_ml_results
+    context['ml_results_count'] = len(pipeline_ml_results)
     context['line_chart_data'] = line_chart_data
     context['pie_chart_data'] = pie_chart_data
 
@@ -155,7 +154,7 @@ def tasks_run_viz(request):
 def _search_posts(request):
     search = request.GET.get("search")
     page = request.GET.get("page")
-    posts = models.ExecutedFlow.objects.all()
+    posts = models.ExecutedPipeline.objects.all()
 
     if search:
         tokens = search.split()
@@ -164,8 +163,8 @@ def _search_posts(request):
         for token in tokens:
             token_query = Q()
 
-            # General search for flow_name
-            token_query |= Q(flow_name_snapshot__icontains=token)
+            # General search for pipeline_name
+            token_query |= Q(pipeline_name_snapshot__icontains=token)
 
             # Check if the token matches a date format (month-year)
             date_match = re.match(r"(\d{4})-(\d{2})", token)
@@ -194,16 +193,16 @@ def _search_posts(request):
 
 def summary_chart_view():
     # Aggregate tasks by day
-    flowes_by_day = models.ExecutedFlow.objects.annotate(day=TruncDay('start_time')).values('day').annotate(count=Count('id')).order_by('day')
+    pipelines_by_day = models.ExecutedPipeline.objects.annotate(day=TruncDay('start_time')).values('day').annotate(count=Count('id')).order_by('day')
     
     # Prepare data for the line chart
     line_chart_data = {
-        'labels': [entry['day'].strftime('%Y-%m-%d') for entry in flowes_by_day],
-        'data': [entry['count'] for entry in flowes_by_day],
+        'labels': [entry['day'].strftime('%Y-%m-%d') for entry in pipelines_by_day],
+        'data': [entry['count'] for entry in pipelines_by_day],
     }
 
     # Aggregate status breakdown
-    status_breakdown = models.ExecutedFlow.objects.values('status', 'start_time').annotate(count=Count('status')).order_by('status')
+    status_breakdown = models.ExecutedPipeline.objects.values('status', 'start_time').annotate(count=Count('status')).order_by('status')
 
     
     # Prepare data for the pie chart
@@ -230,17 +229,17 @@ def update_task_run_node_info(request):
         return HttpResponse("Request must be made via HTMX.", status=400)
     
     node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
-    executed_flow_id = request.GET.get('current_executed_flow_option', None)
+    executed_pipeline_id = request.GET.get('current_executed_pipeline_option', None)
 
     context = {}
 
     if not node_id:
         return HttpResponse("Bad request.", status=400)
 
-    if not models.ExecutedTask.objects.filter(task_snapshot_id=node_id, flow_run_id=executed_flow_id).exists():
+    if not models.ExecutedTask.objects.filter(task_snapshot_id=node_id, pipeline_run_id=executed_pipeline_id).exists():
         return HttpResponse("Bad request.", status=400)
 
-    executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, flow_run_id=executed_flow_id)
+    executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, pipeline_run_id=executed_pipeline_id)
     executed_task_summary = {}
     if not executed_task.task:
         executed_task_summary['task_name'] = executed_task.task_snapshot['task_name']
@@ -261,7 +260,7 @@ def update_task_run_node_info(request):
     context['executed_task_summary'] = executed_task_summary
 
     ''' Check if any machine learning experiments associated with node'''
-    ml_results = models.MLResult.objects.filter(executed_flow_id=executed_flow_id)
+    ml_results = models.MLResult.objects.filter(executed_pipeline_id=executed_pipeline_id)
     context['ml_result_count'] = len(ml_results)
     context['ml_results'] = ml_results
 
@@ -270,16 +269,16 @@ def update_task_run_node_info(request):
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def display_ml_results_table(request):
 
-    executed_flow_id = request.GET.get('current_executed_flow_id')
+    executed_pipeline_id = request.GET.get('current_executed_pipeline_id')
     ml_result_id = request.GET.get('ml_result_option')
     
     if ml_result_id and ml_result_id != '':
-        ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_flow__id=executed_flow_id)
+        ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_pipeline__id=executed_pipeline_id)
     else:
         ml_result = None
 
     context = {'ml_result': ml_result,
-               'current_executed_flow_id': executed_flow_id,}
+               'current_executed_pipeline_id': executed_pipeline_id,}
     
         
     return render(request, 'django_flow_forge/components/ml_result.html', context)
@@ -287,9 +286,9 @@ def display_ml_results_table(request):
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def fetch_ml_viz_data(request):
     # This is where you fetch or generate your data for visualization
-    executed_flow_id = request.GET.get('current_executed_flow_id')
+    executed_pipeline_id = request.GET.get('current_executed_pipeline_id')
     ml_result_id = request.GET.get('ml_result_option')
-    ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_flow__id=executed_flow_id)
+    ml_result = models.MLResult.objects.get(pk=ml_result_id, executed_pipeline__id=executed_pipeline_id)
     metrics = ml_result.evaluation_metrics
     charts = {}
 

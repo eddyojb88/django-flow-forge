@@ -1,4 +1,4 @@
-{% if searched_flows %}
+{% if searched_pipelines %}
 
     <table class="table table-dark table-bordered rounded">
         <thead>
@@ -11,19 +11,19 @@
             </tr>
         </thead>
         <tbody>
-            {% for flow in searched_flows %}
+            {% for pipeline in searched_pipelines %}
             <tr class='align-middle' style="font-size: 0.8rem;">
-                <td >{{ flow.flow_name_snapshot }}</td>
-                <td>{{ flow.start_time }}</td>
+                <td >{{ pipeline.pipeline_name_snapshot }}</td>
+                <td>{{ pipeline.start_time }}</td>
                 <td class="text-center">
-                    <span class="badge {{ flow.status }} text-dark">{{ flow.get_status_display }}</span>
+                    <span class="badge {{ pipeline.status }} text-dark">{{ pipeline.get_status_display }}</span>
                 </td>
                 <td class="text-center">
-                    <span>{{ flow.meta|slice:":300" }}{% if flow.meta|length > 300 %}...{% endif %}</span>
+                    <span>{{ pipeline.meta|slice:":300" }}{% if pipeline.meta|length > 300 %}...{% endif %}</span>
 
                 </td>
                 <td class="text-center">
-                    <button name='executed_flow_option' value='{{ flow.id }}' class="btn btn-primary badge btn-sm" 
+                    <button name='executed_pipeline_option' value='{{ pipeline.id }}' class="btn btn-primary badge btn-sm" 
                     hx-get="{% url 'django-flow-forge:tasks_run_viz' %}" hx-target="#cytoscape-and_ml-outer-row" hx-swap="innerHTML">
                         <i class="fas fa-play"></i> Draw Graph
                     </button>
@@ -37,12 +37,12 @@
     <h3 class="ui header center aligned">No results!</h3>               
 {% endif %}
 <div id="load-more">
-    {% if searched_flows.has_next %}
+    {% if searched_pipelines.has_next %}
         <div class="ui divider"></div>
         <button
             class="ui button primary"
-            hx-get="{% url 'django-flow-forge:search_flow_runs' %}" 
-            hx-vals='{"page": "{{ searched_flows.next_page_number }}", "search": "{{ search }}"}'
+            hx-get="{% url 'django-flow-forge:search_pipeline_runs' %}" 
+            hx-vals='{"page": "{{ searched_pipelines.next_page_number }}", "search": "{{ search }}"}'
             hx-target="#load-more" 
             hx-swap="outerHTML"
         >

@@ -5,15 +5,40 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'conf.settings')
 django.setup()
 
-from example_project.example_app import flow__parallel_celery, flow__simple_with_celery
-from example_project.example_app import flow__ml_grid_search
-from django_flow_forge.flow_engine import run_flow
+from example_app.pipelines.simple_example import SimplePipeline
+from example_app.pipelines.simple_example_with_failure import SimplePipelineFail
+from example_app.pipelines.ml_grid_search_example import MLGridSearchPipeline
+from example_app.pipelines.simple_example_with_celery import SimpleWithCelery
+from example_app.pipelines.celery_with_parallel_pipelines import SimpleWithCeleryParallel
 
+from example_app.celery_app import app  # Make sure this matches the path to your Celery app
+
+from django_flow_forge.auto_register_pipelines import auto_register_pipelines
+
+# Call the function to find and instantiate pipelines
+auto_register_pipelines()
 
 if __name__ == '__main__':
 
     kwargs = {}
 
-    run_flow('pipeline_ml_with_grid_search', **kwargs)
-    # run_flow('pipeline_in_parallel_with_celery',  use_celery=True, **kwargs)
+    pipeline = SimplePipeline()
+    pipeline.run()
+
+    # pipeline = SimplePipelineFail(**kwargs)
+    # pipeline.run()
+
+    # MLGridSearchPipeline().run()
+
+    # SimpleWithCeleryParallel().run(use_celery=True)
+    
+    # SimpleWithCelery().run(use_celery=True)
+
+    
+
+
+
+
+
+    
     

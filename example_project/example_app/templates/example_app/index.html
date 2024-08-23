@@ -14,38 +14,33 @@
     </div>
 
     <div style="margin-bottom: 25px">
-        <button hx-post="{% url 'trigger_pipeline_simple' %}" hx-target="#status" hx-swap="outerHTML">
+        <button hx-post="{% url 'trigger_pipeline_simple' %}" hx-target="#status" hx-swap="innerHTML">
             Initiate 'pipeline_simple' Flow
         </button>
     </div>
-    
+
     <div style="margin-bottom: 25px">
-        <button hx-post="{% url 'trigger_pipeline_with_nested_tasks' %}" hx-target="#status" hx-swap="outerHTML">
-            Initiate 'trigger_pipeline_with_nested_tasks' Flow
+        <button hx-post="{% url 'trigger_pipeline_simple_with_fail' %}" hx-target="#status" hx-swap="innerHTML">
+            Initiate 'pipeline_simple_with_fail' Flow
         </button>
     </div>
 
-    <div style="margin-bottom: 25px">
-        <button hx-post="{% url 'trigger_pipeline_simple_ml' %}" hx-target="#status" hx-swap="outerHTML">
-            Initiate 'trigger_pipeline_simple_ml' Flow
-        </button>
-    </div>
 
     <div style="margin-bottom: 25px">
-        <button hx-post="{% url 'trigger_pipeline_ml_grid_search' %}" hx-target="#status" hx-swap="outerHTML">
+        <button hx-post="{% url 'trigger_pipeline_ml_grid_search' %}" hx-target="#status" hx-swap="innerHTML">
             Initiate 'trigger_pipeline_ml_grid_search' Flow
         </button>
     </div>
 
     <div style="margin-bottom: 25px">
-        <button hx-post="{% url 'trigger_pipeline_simple_with_celery' %}" hx-target="#status" hx-swap="outerHTML">
+        <button hx-post="{% url 'trigger_pipeline_simple_with_celery' %}" hx-target="#status" hx-swap="innerHTML">
             Initiate 'trigger_pipeline_simple_with_celery' Flow
         </button>
     </div>
 
 
     <div style="margin-bottom: 25px">
-        <button hx-post="{% url 'trigger_pipeline_parallel_with_celery' %}" hx-target="#status" hx-swap="outerHTML">
+        <button hx-post="{% url 'trigger_pipeline_parallel_with_celery' %}" hx-target="#status" hx-swap="innerHTML">
             Initiate 'trigger_pipeline_parallel_with_celery' Flow
         </button>
     </div>

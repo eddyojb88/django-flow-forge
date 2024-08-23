@@ -17,7 +17,7 @@
                                 hx-target="#ml-result-table"
                                 hx-swap="outerHTML"
                                 hx-include="this"
-                                hx-vals='{"current_executed_flow_id": "{{ current_executed_flow_id }}"}'
+                                hx-vals='{"current_executed_pipeline_id": "{{ current_executed_pipeline_id }}"}'
                                 >
                                 {% for m in ml_results %}
                                     <option value="{{ m.id }}" {% if forloop.first %}selected{% endif %}>
@@ -32,7 +32,7 @@
                 {% if ml_results|length >= 1 %}
                     {% include 'django_flow_forge/components/ml_result.html' %}
                 {% else %}
-                    <p class="text-light mt-2"> No known machine learning tasks saved for this flow</p>
+                    <p class="text-light mt-2"> No known machine learning tasks saved for this pipeline</p>
                 {% endif %}
             </div>
 
@@ -49,7 +49,7 @@
                             hx-swap="innerHTML"
                             hx-trigger="click" 
                             hx-include="[name='ml_result_option']"
-                            hx-vals='{"current_executed_flow_id": "{{ current_executed_flow_id }}"}'
+                            hx-vals='{"current_executed_pipeline_id": "{{ current_executed_pipeline_id }}"}'
                             class="btn btn-primary"> 
                             Visualize
                     </button>

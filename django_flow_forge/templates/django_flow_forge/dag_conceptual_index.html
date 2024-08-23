@@ -25,7 +25,7 @@
     <div class="container-flex mx-3">
         <div class="row">
             <div class="col">
-                <h2 class="display-4 mb-5 text-light">Flows in Concept</h2>
+                <h2 class="display-4 mb-5 text-light">Pipeline Flows in Concept</h2>
             </div>
         </div>
 
@@ -33,19 +33,19 @@
             <div class="col-md-5">
                     
                 <label class="mb-3 text-light">Select Flow Process to Visualize:</label>
-                        <select name='flow_option' class="form-control" id="graphSelector"
+                        <select name='pipeline_option' class="form-control" id="graphSelector"
                                 hx-get="{% url 'django-flow-forge:conceptual-dag-viz' %}"
                                 hx-trigger="change"
-                                hx-include="[name='flow_option'], [name='show_nested']"
+                                hx-include="[name='pipeline_option'], [name='show_nested']"
                                 hx-target="#cy-graph" 
                                 hx-swap="outerHTML" 
                                 >
                     
-                                {% for flow in all_flowes %}
+                                {% for pipeline in all_pipelines %}
 
-                                    <option value="{{ flow.id }}" {% if forloop.first %}selected{% endif %}>
+                                    <option value="{{ pipeline.id }}" {% if forloop.first %}selected{% endif %}>
                                 
-                                        {{ flow.flow_name }}
+                                        {{ pipeline.pipeline_name }}
             
                                     </option>
                                 
@@ -55,20 +55,7 @@
                 
         </div>
 
-        <div class="row mt-3">
-            <div class="col-md-5">
-                <div class="custom-control custom-switch">
-                    <label class="custom-control-label text-light" for="nestedTasksToggle">Show nested tasks: </label>
-                    <input name='show_nested' type="checkbox" class="custom-control-input" id="nestedTasksToggle"
-                            hx-get="{% url 'django-flow-forge:conceptual-dag-viz' %}"
-                            hx-target="#cy-graph" 
-                            hx-swap="outerHTML"
-                            hx-include="[name='flow_option'], [name='show_nested']"
-                            >
-                    
-                </div>
-            </div>
-        </div>
+
         <div class="row mt-5 mb-5">
             {% include 'django_flow_forge/components/dag_cyto_conceptual_container.html' %}
         </div>

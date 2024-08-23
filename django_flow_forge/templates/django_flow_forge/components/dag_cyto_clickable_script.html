@@ -1,6 +1,6 @@
         <!-- Placeholder for HTMX response handling -->
         <div id="cy-graph" style="min-width: 600px; height: 600px;" class="rounded"></div>
-        <input type="hidden" class="include-input" id='current_executed_flow_option' name="current_executed_flow_option" value={{ current_executed_flow_id }}>
+        <input type="hidden" class="include-input" id='current_executed_pipeline_option' name="current_executed_pipeline_option" value={{ current_executed_pipeline_id }}>
         
         <script>
         // Initialize Cytoscape with default layout
@@ -61,12 +61,12 @@
         cy.on('tap', 'node', function(evt){
 
             var nodeId = (typeof evt.target.id == 'function') ? evt.target.id() : ""
-            var executedProcessId = "{{ current_executed_flow_id }}"; // Render Django variable into JS
+            var executedProcessId = "{{ current_executed_pipeline_id }}"; // Render Django variable into JS
             console.log('Executed process id: ' + executedProcessId )
 
             // Trigger HTMX request upon clicking the node
             console.log('Sending click event to body with node id: ' + nodeId + ' and executedProcessID: ' + executedProcessId)
-            htmx.trigger(htmx.find('#data-div1'), "tap", {'clicked_node_id':nodeId, 'executed_flow_option': executedProcessId});
+            htmx.trigger(htmx.find('#data-div1'), "tap", {'clicked_node_id':nodeId, 'executed_pipeline_option': executedProcessId});
 
 
         });

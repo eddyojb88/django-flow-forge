@@ -3,38 +3,34 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse
 
-from django_flow_forge.flow_engine import run_flow
-from django_flow_forge import models as mlops_models
-
- # This is important in order to load up your tasks and allow django_ml_ops to register each task
-# from . import flow__parallel_celery, flow__ml_grid_search, flow__simple, flow__simple_ml, flow__with_nested_tasks
-# from . import  flow__simple_with_celery, flow__parallel_celery
+# from example_app import pipelines
+from example_app.pipelines.simple_example_with_celery import SimpleWithCelery
+from example_app.pipelines.celery_with_parallel_pipelines import SimpleWithCeleryParallel
 
 def index(request):
     return render(request, 'example_app/index.html')
 
 def trigger_pipeline_simple(request):
-    run_flow('pipeline_simple')
+    from example_app.pipelines.simple_example import SimplePipeline
+    SimplePipeline().run()
     return HttpResponse("'Pipeline Simple' Executed", status=200)
 
-def trigger_pipeline_with_nested_tasks(request):
-    run_flow('pipeline_with_nested_tasks')
-    return HttpResponse("'pipeline_with_nested_tasks' executed", status=200)
-
-def trigger_pipeline_simple_ml(request):
-    run_flow('pipeline_simple_ml')
-    return HttpResponse("'pipeline_simple_ml' executed", status=200)
+def trigger_pipeline_simple_with_fail(request):
+    from example_app.pipelines.simple_example_with_failure import SimplePipelineFail
+    SimplePipelineFail().run()
+    return HttpResponse("'Pipeline Simple with Failure' Executed", status=200)
 
 def trigger_pipeline_ml_grid_search(request):
-    run_flow('pipeline_ml_with_grid_search')
+    from example_app.pipelines.ml_grid_search_example import MLGridSearchPipeline
+    MLGridSearchPipeline().run()
     return HttpResponse("'pipeline_ml_with_grid_search' executed", status=200)
 
 def trigger_pipeline_simple_with_celery(request):
-    run_flow('trigger_pipeline_simple_with_celery')
+    SimpleWithCelery().run()
     return HttpResponse("'trigger_pipeline_simple_with_celery' executed", status=200)
 
 def trigger_pipeline_parallel_with_celery(request):
-    run_flow('pipeline_in_parallel_with_celery')
+    SimpleWithCeleryParallel().run(use_celery=True)
     return HttpResponse("'pipeline_in_parallel_with_celery' executed", status=200)
 
 def fetch_custom_ml_viz_data(request):

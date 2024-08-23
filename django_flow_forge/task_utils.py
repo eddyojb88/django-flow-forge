@@ -6,7 +6,7 @@ import sys
 import traceback
 from django.conf import settings
 
-from .models import ExecutedTask, FlowTask
+from .models import ExecutedTask, PipelineTask
 
 class TaskExecutor:
 
@@ -24,8 +24,8 @@ class TaskExecutor:
     def create_checkpoint(self,):
 
         # If the task is async, you might want to handle the result differently                
-        self.flow_run.last_checkpoint_datetime = timezone.now()
-        self.flow_run.save(update_fields=['last_checkpoint_datetime'])
+        self.db_pipeline_run.last_checkpoint_datetime = timezone.now()
+        self.db_pipeline_run.save(update_fields=['last_checkpoint_datetime'])
 
     def submit_task(self, **kwargs):
 
@@ -39,7 +39,7 @@ class TaskExecutor:
 
         if accepts_kwargs:
             filtered_kwargs = kwargs
-            kwargs['flow_name'] = self.flow_name
+            kwargs['pipeline_name'] = self.pipeline_name
             kwargs['task_name'] = self.task_name
             
         else:
@@ -59,6 +59,9 @@ class TaskExecutor:
                     logging.error(f"An exception occurred during task execution:\n{traceback_str}")
                     # Pass the exception to failed_task_output
                     self.failed_task_output(traceback_str, **kwargs)
+                    self.db_pipeline_run.status = 'failed'
+                    self.parent_pipeline_obj.post_pipeline_graph_to_add_status()
+                    self.db_pipeline_run.save()
         
         else:
 
@@ -84,28 +87,28 @@ class TaskExecutor:
     def task_post_process(self):
         
         if getattr(settings, 'MLOPS_DEBUG', True):
-            post_flow_graph_to_add_status(self.flow_run) # inefficient but potentially useful for debugging
+            self.parent_pipeline_obj.post_pipeline_graph_to_add_status() # inefficient but potentially useful for debugging
 
         return
     
-    def setup_flow_task(self, flow, flow_run, **kwargs):
+    def setup_pipeline_task(self, **kwargs):
 
-        flow_task_obj = FlowTask.objects.get(task_name=self.task_name, flow=flow)
+        db_pipeline_task_obj = PipelineTask.objects.get(task_name=self.task_name, pipeline=self.db_pipeline)
         
         # Check if the task has already been executed
-        if ExecutedTask.objects.filter(flow_run=flow_run, task=flow_task_obj).exists():
+        if ExecutedTask.objects.filter(pipeline_run=self.db_pipeline_run, task=db_pipeline_task_obj).exists():
             logging.info(f"Task {self.task_name} already executed.")
             return  # Task already executed
 
         logging.info(f"Setting up task: {self.task_name}...")
 
-        self.task_snapshot = make_task_snapshot(flow_task_obj,)
+        self.task_snapshot = make_task_snapshot(db_pipeline_task_obj,)
         self.task_name_snapshot = self.task_name
 
         task_run = ExecutedTask.objects.create(
-            flow_run=flow_run,
-            task=flow_task_obj,
-            task_snapshot_id=flow_task_obj.id,
+            pipeline_run=self.db_pipeline_run,
+            task=db_pipeline_task_obj,
+            task_snapshot_id=db_pipeline_task_obj.id,
             task_snapshot=self.task_snapshot,
             start_time=timezone.now(),
         )
@@ -128,7 +131,7 @@ class TaskExecutor:
 
         ''' If task no longer exists, remove it'''
 
-        if self.task_run.task and not FlowTask.objects.filter(id=self.task_run.task.id).exists():
+        if self.task_run.task and not PipelineTask.objects.filter(id=self.task_run.task.id).exists():
             self.task_run.task = None
 
         self.task_run.save(update_fields=['status', 'end_time', 'task_complete', 'output'])
@@ -149,10 +152,10 @@ class TaskExecutor:
         self.task_run.end_time = timezone.now()
         self.task_run.exceptions['main_run'] = str(e)
         self.task_run.output = str(e)
-        self.task_run.flow_run.failed_tasks.append(self.task_name)
+        self.task_run.pipeline_run.failed_tasks.append(self.task_name)
 
         ''' If task no longer exists, remove it'''
-        if not FlowTask.objects.filter(id=self.task_run.task.id).exists():
+        if not PipelineTask.objects.filter(id=self.task_run.task.id).exists():
             self.task_run.task = None
             
         self.task_run.save(update_fields=['status', 'end_time', 'exceptions',])
@@ -213,12 +216,6 @@ def get_cytoscape_nodes_and_edges(tasks, show_nested=False):
                     if parent_tasks.exists():
                         add_tasks_to_graph(tasks=parent_tasks, target_task_id=task_id)
 
-                    tasks_depends_bidirectionally_with = task.depends_bidirectionally_with.all()
-                    if tasks_depends_bidirectionally_with.exists():
-                        add_tasks_to_graph(tasks=tasks_depends_bidirectionally_with, target_task_id=task_id, 
-                                        assigning_bidirectional_edges=True
-                                        )
-
     # Start adding tasks to the graph; no parent_id for top-level tasks
     add_tasks_to_graph(tasks)
 
@@ -230,88 +227,23 @@ def get_cytoscape_nodes_and_edges(tasks, show_nested=False):
 
     return graph_json
 
-def make_task_snapshot(flow_task_obj,):
+def make_task_snapshot(db_pipeline_task_obj,):
 
     """
     Creates a snapshot of the given task's details.
 
     Args:
-        flow_task_obj: An instance of FlowTask representing the task for which a snapshot is being created.
+        pipeline_task_obj: An instance of PipelineTask representing the task for which a snapshot is being created.
 
     Returns:
         A dictionary containing the snapshot of the task, including its ID, name, dependencies, bidirectional dependencies, and nested status.
     """
 
     task_snapshot = {
-        'task_id': flow_task_obj.id,
-        'task_name': flow_task_obj.task_name,
+        'task_id': db_pipeline_task_obj.id,
+        'task_name': db_pipeline_task_obj.task_name,
         # Assuming 'task' has the necessary information; adjust as necessary
-        'depends_on': [dependency.task_name for dependency in flow_task_obj.depends_on.all()],
-        'depends_bidirectionally_with': [dependency.task_name for dependency in flow_task_obj.depends_bidirectionally_with.all()],
-        'nested': flow_task_obj.nested
+        'depends_on': [dependency.task_name for dependency in db_pipeline_task_obj.depends_on.all()],
     }
 
     return task_snapshot
-
-def make_flow_snapshot(tasks_lookup, task_order):
-
-    '''
-    Creates a snapshot of the flow tasks based on the provided task order and lookup details.
-    Each ExecutedFlow needs to store a snapshot of the tasks
-    Each ExecutedTask might have an output which we need to explore data from from a click of the node on the graph viz
-    Therefore, store the task run ids with the nodes too, otherwise, if the original task changes later on then there is no valid ref
-
-    Parameters:
-    - tasks_lookup (dict): A dictionary where keys are task names and values are dictionaries containing task details.
-    - task_order (list): A list of task names representing the order in which tasks should be executed.
-
-    Returns:
-    - dict: A dictionary representing the snapshot of the flow, including tasks and their execution order.
- 
-    '''
-
-    # Initialize the flow snapshot with task details
-    flow_snapshot = {
-        'tasks': [],
-        'order': task_order
-    }
-
-    for task_name in task_order:
-        task_details = tasks_lookup.get(task_name)
-        if task_details:
-            # Assume task_details includes necessary information; adjust as needed
-            task_snapshot = {
-                'name': task_name,
-                'depends_on': task_details.get('depends_on', []),
-            }
-            flow_snapshot['tasks'].append(task_snapshot)
-    
-    return flow_snapshot
-
-def post_flow_graph_to_add_status(flow_run):
-    '''
-    An inefficient add on in order to color nodes based on task status
-    Updates the flow run snapshot with the execution status of each task for visualization purposes.
-
-    Parameters:
-    - flow_run (ExecutedFlow): The flow run instance to update.
-
-    Returns:
-    - ExecutedFlow: The updated flow run instance with task status information.
-    '''
-
-    # create index map:
-    index_map = {}
-    snapshot = flow_run.flow_snapshot
-    nodes = snapshot['graph']['nodes']
-    etasks = ExecutedTask.objects.filter(flow_run=flow_run,)
-    for count, i in enumerate(nodes):
-        index_map[i['data']['id']] = count
-        etask = etasks.filter(task_snapshot_id=i['data']['id'])
-        if len(etask) > 0:
-            i['data']['status'] = etask[0].status
-    snapshot['graph']['nodes'] = nodes
-    flow_run.flow_snapshot = snapshot
-    flow_run.save(update_fields=['flow_snapshot'])
-
-    return
