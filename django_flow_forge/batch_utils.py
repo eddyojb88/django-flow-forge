@@ -1,7 +1,7 @@
-from django_flow_forge.models import BatchHandler, FlowBatch
+from django_flow_forge.models import BatchHandler, PipelineBatch
 from django.conf import settings
 
-def get_flow_batches(total_batch_count, batch_ref_name=None, del_prev_batch_data=False, **kwargs):
+def get_pipeline_batches(total_batch_count, batch_ref_name=None, del_prev_batch_data=False, **kwargs):
     
     if settings.DEBUG and not batch_ref_name:
         print('Creating a batch in debug mode')
@@ -22,10 +22,10 @@ def get_flow_batches(total_batch_count, batch_ref_name=None, del_prev_batch_data
         batch_handler.save()
 
     for batch_number in range(total_batch_count):
-        batch = FlowBatch.objects.get_or_create(batch_handler=batch_handler, flow_batch_number=batch_number)
+        batch = PipelineBatch.objects.get_or_create(batch_handler=batch_handler, pipeline_batch_number=batch_number)
 
-    print(f'Created a BatchHandler with {total_batch_count} FlowBatch objects')
+    print(f'Created a BatchHandler with {total_batch_count} PipelineBatch objects')
 
-    flow_batches = batch_handler.batch.all().order_by('flow_batch_number')
+    pipeline_batches = batch_handler.batch.all().order_by('pipeline_batch_number')
 
-    return flow_batches
+    return pipeline_batches
