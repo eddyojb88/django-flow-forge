@@ -295,7 +295,7 @@ class PipelineBase:
             executor = self.task_executors[task_name]
             failed_count = 0
             
-            for dep in executor.depends_on:
+            for dep in executor.depends_on_task_names:
                 # If the dependency has failed, increment the failed count
                 if self.task_executors[dep].task_run.status == 'failed':
                     failed_count += 1
