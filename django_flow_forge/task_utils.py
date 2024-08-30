@@ -41,6 +41,7 @@ class TaskExecutor:
             filtered_kwargs = kwargs
             kwargs['pipeline_name'] = self.pipeline_name
             kwargs['task_name'] = self.task_name
+            kwargs['executed_task_id'] = self.task_run.id
             
         else:
             filtered_kwargs = self.filter_kwargs_for_function(self.function, kwargs)

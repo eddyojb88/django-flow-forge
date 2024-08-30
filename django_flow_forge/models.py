@@ -88,6 +88,8 @@ class ExecutedTask(models.Model):
     task_snapshot = models.JSONField(default=dict)  # Captures the task state at the time of this run
     output = models.JSONField(null=True, default=dict)  # Captures the output of the task for this run
     start_time = models.DateTimeField(auto_now_add=True)
+    last_checkpoint_datetime = models.DateTimeField(blank=True, auto_now_add=True)
+    last_checkpoint_message = models.CharField(null=True, blank=True, max_length=255)
     end_time = models.DateTimeField(null=True, blank=True)
     task_complete = models.BooleanField(default=False)  # Indicates if the task run is complete
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
