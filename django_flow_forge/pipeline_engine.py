@@ -9,7 +9,6 @@ import time
 import inspect
 from django.db import transaction
 
-
 from .models import Pipeline, PipelineTask
 
 pipeline_lookup = {}
