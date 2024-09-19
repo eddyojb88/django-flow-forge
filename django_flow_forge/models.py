@@ -63,7 +63,7 @@ class ExecutedPipeline(models.Model):
     executed_by = models.CharField(null=True, blank=True, max_length=255)
     pipeline_complete = models.BooleanField(default=False)  # Indicates if the pipeline run is complete
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    last_checkpoint_datetime = models.DateTimeField(blank=True, auto_now_add=True)
+    last_checkpoint_datetime = models.DateTimeField(blank=True, null=True, auto_now_add=True)
     pipeline_snapshot = models.JSONField(default=dict)  # Captures the output of the task for this run
     exceptions = models.JSONField(default=dict, null=True, blank=True)
     params = models.JSONField(default=dict, null=True, blank=True)
