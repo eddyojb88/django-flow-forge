@@ -253,6 +253,7 @@ class PipelineBase:
         self.post_pipeline_graph_to_add_status()
         self.db_pipeline_run.save()
 
+        # Only set a batch as executed if its complete
         if pipeline_batch_id and (all(executor.task_run.status == 'complete' for executor in self.task_executors.values())):
             batch = PipelineBatch.objects.get(id=pipeline_batch_id)
             executed = batch.temp_data.get('executed_pipelines', [])
