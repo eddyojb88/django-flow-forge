@@ -4,8 +4,8 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "django-flow-forge"
-version = "0.9.2"
-description = "Keep Data Ops and Machine Learning Ops (MLOps) simple with this Django module for defining, running and monitoring data work flows."
+version = "0.9.4"
+description = "Keep Data Ops and Machine Learning Ops (MLOps) simple and vendor agnostic with this Django module for defining, running and monitoring data work flows."
 authors = [{name = "Ed Burmicz", email = "eddyojb@gmail.com"}]
 readme = "README.md"
 license = {text = "MIT"} 

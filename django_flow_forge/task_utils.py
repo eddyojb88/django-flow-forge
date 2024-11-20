@@ -36,6 +36,8 @@ class TaskExecutor:
         kwargs['current_task_name'] = self.task_name
         self.task_run.status = 'in_progress'
         accepts_kwargs = self.function_accepts_kwargs(self.function)
+        self.task_run.start_time=timezone.now()
+        self.task_run.save()
 
         if accepts_kwargs:
             filtered_kwargs = kwargs
@@ -82,7 +84,7 @@ class TaskExecutor:
         return
 
     def task_is_ready_for_close(self, **kwargs):
-        '''This is a dummy method in sync mode but used for async tasks'''
+        '''This is a dummy method in sync mode, however in async tasks it is used'''
         return True
 
     def task_post_process(self):
@@ -111,7 +113,7 @@ class TaskExecutor:
             task=db_pipeline_task_obj,
             task_snapshot_id=db_pipeline_task_obj.id,
             task_snapshot=self.task_snapshot,
-            start_time=timezone.now(),
+            # start_time=timezone.now(),
         )
         
         self.task_run = task_run
