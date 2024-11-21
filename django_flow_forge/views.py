@@ -249,6 +249,7 @@ def update_task_run_node_info(request):
     executed_task_summary['Task Status'] = executed_task.status
     executed_task_summary['Start Time'] = executed_task.start_time
     executed_task_summary['End Time'] = executed_task.end_time
+    executed_task_summary['Metadata'] = executed_task.metadata
 
     if executed_task.status == 'failed':
         executed_task_summary['Exception'] = executed_task.exceptions['main_run']
