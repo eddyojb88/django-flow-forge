@@ -37,7 +37,8 @@ class TaskExecutor:
         self.task_run.status = 'in_progress'
         accepts_kwargs = self.function_accepts_kwargs(self.function)
         self.task_run.start_time=timezone.now()
-        self.task_run.save()
+        self.task_run.save(update_fields=['start_time'])
+
 
         if accepts_kwargs:
             filtered_kwargs = kwargs
