@@ -94,6 +94,7 @@ class ExecutedTask(models.Model):
     task_complete = models.BooleanField(default=False)  # Indicates if the task run is complete
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     exceptions = models.JSONField(default=dict, null=True, blank=True,)
+    metadata = models.JSONField(default=dict, null=True, blank=True)
 
     def __str__(self):
         if not self.task:
