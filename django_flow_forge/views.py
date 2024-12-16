@@ -1,3 +1,4 @@
+from multiprocessing import context
 from django.shortcuts import render
 from . import models
 from django.http import HttpResponse
@@ -223,13 +224,47 @@ def summary_chart_view():
     return line_chart_data, pie_chart_data
 
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')
+def update_pipeline_status(request, pipeline_id):
+
+    if not request.htmx:
+        return HttpResponse("Request must be made via HTMX.", status=400)
+    
+    pipeline = models.ExecutedPipeline.objects.get(id=pipeline_id)
+    pipeline.status = request.POST.get('status')
+    pipeline.save()
+
+    context = {'pipeline': pipeline}
+
+    return render(request, 'django_flow_forge/components/status_td.html', context=context)
+
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
+def update_pipeline_graph(request):
+
+    if not request.htmx:
+        return HttpResponse("Request must be made via HTMX.", status=400)
+    
+    executed_pipeline_id = request.POST.get('current_executed_pipeline_option', None)
+
+    context = {}
+    
+    executed_pipeline = models.ExecutedPipeline.objects.get(id=executed_pipeline_id)
+    graph_json = executed_pipeline.pipeline_snapshot['graph']
+    # graph_json_serialized = json.dumps(graph_json, cls=DjangoJSONEncoder)
+    # context['graph_json'] = graph_json_serialized
+
+    # graph_json_serialized = json.dumps(graph_json, cls=DjangoJSONEncoder)
+
+    return JsonResponse(graph_json, safe=False)
+ 
+
+@user_has_permission(permission='django_flow_forge.django_flow_admin_access')
 def update_task_run_node_info(request):
 
     if not request.htmx:
         return HttpResponse("Request must be made via HTMX.", status=400)
     
-    node_id = request.GET.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
-    executed_pipeline_id = request.GET.get('current_executed_pipeline_option', None)
+    node_id = request.POST.get('clicked_node_id', None) # this is the id of the task it was when the task was first run
+    executed_pipeline_id = request.POST.get('current_executed_pipeline_option', None)
 
     context = {}
 
@@ -240,6 +275,9 @@ def update_task_run_node_info(request):
         return HttpResponse("Bad request.", status=400)
 
     executed_task = models.ExecutedTask.objects.get(task_snapshot_id=node_id, pipeline_run_id=executed_pipeline_id)
+    context['executed_task_id'] = executed_task.id
+    context['executed_pipeline_id'] = executed_pipeline_id
+
     executed_task_summary = {}
     if not executed_task.task:
         executed_task_summary['task_name'] = executed_task.task_snapshot['task_name']
@@ -264,7 +302,7 @@ def update_task_run_node_info(request):
     ml_results = models.MLResult.objects.filter(executed_pipeline_id=executed_pipeline_id)
     context['ml_result_count'] = len(ml_results)
     context['ml_results'] = ml_results
-
+    
     return render(request, 'django_flow_forge/components/clicked_executed_task_node_info.html', context)
         
 @user_has_permission(permission='django_flow_forge.django_flow_admin_access')

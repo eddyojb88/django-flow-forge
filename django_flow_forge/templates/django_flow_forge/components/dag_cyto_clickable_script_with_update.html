@@ -1,6 +1,13 @@
         <!-- Placeholder for HTMX response handling -->
-        <div id="cy-graph" style="min-width: 600px; height: 600px;" class="rounded"
-        ></div>
+        <div id="cy-graph" style="min-width: 600px; height: 600px;" class="rounded"></div>
+
+        <div id="dummy-data-div" style="display: none;"
+            hx-trigger="every 10s"
+            hx-post="{% url 'django-flow-forge:update-pipeline-graph' %}"
+            hx-vals='{"current_executed_pipeline_option": "{{current_executed_pipeline_id}}"}'
+        
+        >
+
         <input type="hidden" class="include-input" id='current_executed_pipeline_option' name="current_executed_pipeline_option" value={{ current_executed_pipeline_id }}>
         
         <script>
@@ -57,26 +64,29 @@
             var color = getNodeColor(status);
             node.style('background-color', color);
         });
-
-        // Add event listener for node clicks
-        cy.on('tap', 'node', function(evt){
-
-            var nodeId = (typeof evt.target.id == 'function') ? evt.target.id() : ""
-            var executedProcessId = "{{ current_executed_pipeline_id }}"; // Render Django variable into JS
-            console.log('Executed process id: ' + executedProcessId )
-
-            // Trigger HTMX request upon clicking the node
-            console.log('Sending click event to body with node id: ' + nodeId + ' and executedProcessID: ' + executedProcessId)
-            htmx.trigger(htmx.find('#data-div1'), "tap", {'clicked_node_id':nodeId, 'executed_pipeline_option': executedProcessId});
-
-
+        function attachNodeClickListeners() {
+        cy.on('tap', 'node', function(evt) {
+            var nodeId = (typeof evt.target.id == 'function') ? evt.target.id() : "";
+            var executedProcessId = "{{ current_executed_pipeline_id }}";
+            console.log('Executed process id: ' + executedProcessId);
+            console.log('Sending click event to body with node id: ' + nodeId + ' and executedProcessID: ' + executedProcessId);
+            htmx.trigger(htmx.find('#data-div1'), "tap", { 'clicked_node_id': nodeId, 'executed_pipeline_option': executedProcessId });
         });
+    }
+         attachNodeClickListeners();
 
-        function updateGraph(graph_json) {
-                                            cy.json({ elements: graph_json });
-                                            updateNodeColors();
+        function updateGraph(evt) {
+            var graph_json = evt.detail.xhr.response;
+            cy.json({ elements: graph_json });
+            updateNodeColors();
+            attachNodeClickListeners(); // Reattach event listeners to nodes
+
                                         }
-
+        document.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.requestConfig.path.endsWith('{% url "django-flow-forge:update-pipeline-graph" %}')) {
+            updateGraph(evt);
+        }
+    });
 
         
         </script>

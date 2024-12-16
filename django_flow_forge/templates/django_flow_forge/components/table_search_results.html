@@ -15,9 +15,13 @@
             <tr class='align-middle' style="font-size: 0.8rem;">
                 <td >{{ pipeline.pipeline_name_snapshot }}</td>
                 <td>{{ pipeline.start_time }}</td>
-                <td class="text-center">
-                    <span class="badge {{ pipeline.status }} text-dark">{{ pipeline.get_status_display }}</span>
-                </td>
+                <!-- <td class="text-center"> -->
+                    <!-- <span class="badge {{ pipeline.status }} text-dark">{{ pipeline.get_status_display }}</span> -->
+                <!-- </td> -->
+                <!-- Add this cell in your table row -->
+                
+                {% include 'django_flow_forge/components/status_td.html' %}
+
                 <td class="text-center">
                     <span>{{ pipeline.meta|slice:":300" }}{% if pipeline.meta|length > 300 %}...{% endif %}</span>
 

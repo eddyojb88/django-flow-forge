@@ -1,0 +1,13 @@
+<td class="text-center">
+    <select name="status" 
+            hx-post="{% url 'django-flow-forge:update-pipeline-status' pipeline.id %}"
+            hx-trigger="change"
+            hx-target="closest td"
+            hx-swap="outerHTML"
+            class="form select form-select sm badge {{ pipeline.status }} text-dark">
+        <option value="incomplete" {% if pipeline.status == 'incomplete' %}selected{% endif %}>Incomplete</option>
+        <option value="failed" {% if pipeline.status == 'failed' %}selected{% endif %}>Failed</option>
+        <option value="pending" {% if pipeline.status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="complete" {% if pipeline.status == 'complete' %}selected{% endif %}>Completed</option>
+    </select>
+</td>
